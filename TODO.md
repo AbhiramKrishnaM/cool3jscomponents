@@ -27,7 +27,7 @@ See `PLAN.md` for the full plan.
 
 ## 3. contribution-skyline
 - [x] Port the bars, rim shader, twinkle and spark/shard bursts from the portfolio grid
-- [ ] Standalone mode (own scene) + layer mode on `spacetime-grid` — layer mode done (`contributionSkyline()` grid plugin); standalone to do
+- [x] Standalone mode (own scene) + layer mode on `spacetime-grid`
 - [x] Rise driven by a 0–1 progress value the host controls
 - [ ] Fetch helper for server / serverless / build time (username → JSON; optional token for private contributions, never in the browser) — based on `Portfolio/scripts/fetch-contributions.mjs`
 - [ ] Flat 2D calendar component as the lightweight option

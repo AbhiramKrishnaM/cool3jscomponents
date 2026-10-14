@@ -25,11 +25,9 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "three": ">=0.160.0",
-    "@abhiramkrishna/spacetime-grid": "workspace:^"
+    "three": ">=0.160.0"
   },
   "devDependencies": {
-    "@abhiramkrishna/spacetime-grid": "workspace:*",
     "@types/three": "^0.186.0",
     "three": "^0.186.1",
     "tsup": "~8.5.1",
@@ -38,9 +36,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "peerDependenciesMeta": {
-    "@abhiramkrishna/spacetime-grid": {
-      "optional": true
-    }
+  "dependencies": {
+    "@abhiramkrishna/spacetime-grid": "workspace:^"
   }
 }

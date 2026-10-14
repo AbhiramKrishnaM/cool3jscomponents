@@ -172,8 +172,8 @@ export class SkylineLayer implements GridPlugin {
   private placement(grid: SpacetimeGrid): { col0: number; row0: number } {
     if (this.origin) return { col0: this.origin.col, row0: this.origin.row };
     const half = Math.floor(this.weeks / 2);
-    let centerCol = grid.cols / 2;
-    let centerRow = grid.rows / 2;
+    let centerCol = Math.floor(grid.cols / 2);
+    let centerRow = Math.floor(grid.rows / 2);
     if (this.anchor) {
       const hit = grid.screenToGround(this.anchor.ndc[0], this.anchor.ndc[1], { pose: this.anchor.pose, out: new Vector3() });
       if (hit) {
