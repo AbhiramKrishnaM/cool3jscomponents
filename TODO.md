@@ -23,7 +23,7 @@ See `PLAN.md` for the full plan.
 - [x] Plugin/hook API: camera poses per section, extra wells that follow an element, impulses, data overlays
 - [x] Options: size/density, colours/theme, wave strength, well radius/depth, ripple speed/lifetime, fog, pixel-ratio cap, reduced motion
 - [x] Wrappers: Vue, React, Web Component
-- [ ] README with usage + screenshots
+- [x] README with usage + screenshots
 
 ## 3. contribution-skyline
 - [ ] Port the bars, rim shader, twinkle and spark/shard bursts from the portfolio grid
