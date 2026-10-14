@@ -1,0 +1,17 @@
+export const DAYS_PER_WEEK = 7;
+export const LEVEL_GLOW = [0, 0.35, 0.55, 0.8, 1] as const;
+export const BAR_HEIGHT = [0, 0.22, 0.45, 0.75, 1.15] as const;
+export const BAR_STAGGER = 0.55;
+export const BAR_OPACITY = 0.85;
+export const BURST_LEVEL = 4;
+export const BURST_EVERY = [3.5, 8] as const;
+export const BURST_FLASH = 0.35;
+export const SPARK_GRAVITY = 3.2;
+export const SPARK_SHARDS = 5;
+export const SPARK_POOL = 600;
+export const SPARK_SIZE = 5;
+export const SHARD_POOL = 3000;
+export const SHARD_SIZE = 2.6;
+export const SHARD_LIFE = [0.5, 0.9] as const;
+export const TWINKLE_PERIOD = [13, 21] as const;
+export const VISIBLE_THRESHOLD = 0.001;

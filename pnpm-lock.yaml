@@ -41,6 +41,9 @@ importers:
 
   packages/contribution-skyline:
     devDependencies:
+      '@abhiramkrishna/spacetime-grid':
+        specifier: workspace:*
+        version: link:../spacetime-grid
       '@types/three':
         specifier: ^0.186.0
         version: 0.186.0

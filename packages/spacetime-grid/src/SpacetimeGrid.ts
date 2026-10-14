@@ -259,6 +259,10 @@ export class SpacetimeGrid {
     return () => this.removePlugin(entry);
   }
 
+  invalidate(): void {
+    this.renderStill();
+  }
+
   setTheme(theme: Partial<SpacetimeGridTheme>): void {
     Object.assign(this.theme, theme);
     this.applyTheme();

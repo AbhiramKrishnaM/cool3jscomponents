@@ -287,6 +287,7 @@ All four hooks are optional: `setup(grid)` (return a cleanup function), `beforeF
 | `addWell(clientX, clientY, { radius, depth, strength })` | Add a well for the current frame; call it from `beforeFrame`. At most 4 per frame, plus the cursor. |
 | `setCameraTarget(pose, { immediate })` | Move the camera toward `{ position, lookAt }`, or jump there with `immediate`. |
 | `screenToGround(ndcX, ndcY, { pose, out })` | Find where a screen point (−1…1) hits the grid, in grid-local coordinates. Pass `pose` to ask from a camera pose other than the current one. |
+| `invalidate()` | Redraw the still frame under reduced motion, for when a plugin's state changes. Does nothing while animating. |
 | `resize()` | Re-measure. This happens automatically through a `ResizeObserver`. |
 | `destroy()` | Stop and free everything, including plugins. |
 
