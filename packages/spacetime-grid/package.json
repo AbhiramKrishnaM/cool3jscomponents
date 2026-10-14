@@ -6,7 +6,9 @@
   "author": "Abhiram Krishna M",
   "type": "module",
   "sideEffects": false,
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -14,6 +16,18 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./vue": {
+      "types": "./dist/vue.d.ts",
+      "import": "./dist/vue.js"
+    },
+    "./react": {
+      "types": "./dist/react.d.ts",
+      "import": "./dist/react.js"
+    },
+    "./element": {
+      "types": "./dist/element.d.ts",
+      "import": "./dist/element.js"
     },
     "./package.json": "./package.json"
   },
@@ -23,15 +37,28 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "three": ">=0.160.0"
+    "three": ">=0.160.0",
+    "vue": ">=3.3.0",
+    "react": ">=18.0.0"
   },
   "devDependencies": {
     "@types/three": "^0.186.0",
     "three": "^0.186.1",
     "tsup": "~8.5.1",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "@types/react": "19.3.0",
+    "react": "19.3.0",
+    "vue": "3.5.43"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "peerDependenciesMeta": {
+    "vue": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
   }
 }

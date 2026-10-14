@@ -22,7 +22,7 @@ See `PLAN.md` for the full plan.
 - [x] Keep the per-tile tick allocation-free and trig-free (precomputed sin/cos); pause off-screen / when the tab is hidden
 - [x] Plugin/hook API: camera poses per section, extra wells that follow an element, impulses, data overlays
 - [x] Options: size/density, colours/theme, wave strength, well radius/depth, ripple speed/lifetime, fog, pixel-ratio cap, reduced motion
-- [ ] Wrappers: Vue, React, Web Component
+- [x] Wrappers: Vue, React, Web Component
 - [ ] README with usage + screenshots
 
 ## 3. contribution-skyline
