@@ -1,4 +1,4 @@
-import { WAVE_AMPLITUDE, WAVE_OCTAVES } from "./constants";
+import { WAVE_OCTAVES } from "./constants";
 
 export interface WaveField {
   speed: Float32Array;
@@ -6,7 +6,7 @@ export interface WaveField {
   cosT: Float32Array;
   cellSin: Float32Array;
   cellCos: Float32Array;
-  scale: number;
+  weightSum: number;
 }
 
 export function createWaveField(centers: Float32Array, count: number): WaveField {
@@ -46,7 +46,7 @@ export function createWaveField(centers: Float32Array, count: number): WaveField
     cosT: new Float32Array(WAVE_OCTAVES),
     cellSin,
     cellCos,
-    scale: WAVE_AMPLITUDE / weightSum,
+    weightSum,
   };
 }
 
@@ -57,11 +57,11 @@ export function prepareWaveFrame(field: WaveField, t: number): void {
   }
 }
 
-export function waveHeightAt(field: WaveField, i: number): number {
+export function waveHeightAt(field: WaveField, i: number, scale: number): number {
   const base = i * WAVE_OCTAVES;
   let h = 0;
   for (let o = 0; o < WAVE_OCTAVES; o++) {
     h += field.cellSin[base + o] * field.cosT[o] + field.cellCos[base + o] * field.sinT[o];
   }
-  return h * field.scale;
+  return h * scale;
 }

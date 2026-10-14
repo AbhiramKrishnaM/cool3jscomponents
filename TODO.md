@@ -21,7 +21,7 @@ See `PLAN.md` for the full plan.
 - [x] Core effects: idle waves, cursor gravity well, click ripples, fog, theme colours
 - [x] Keep the per-tile tick allocation-free and trig-free (precomputed sin/cos); pause off-screen / when the tab is hidden
 - [x] Plugin/hook API: camera poses per section, extra wells that follow an element, impulses, data overlays
-- [ ] Options: size/density, colours/theme, wave strength, well radius/depth, ripple speed/lifetime, fog, pixel-ratio cap, reduced motion
+- [x] Options: size/density, colours/theme, wave strength, well radius/depth, ripple speed/lifetime, fog, pixel-ratio cap, reduced motion
 - [ ] Wrappers: Vue, React, Web Component
 - [ ] README with usage + screenshots
 
@@ -43,7 +43,7 @@ See `PLAN.md` for the full plan.
 - [ ] Deploy on Vercel at `docs.abhiramkrishna.com` (DNS in Namecheap)
 
 ## 5. Sandbox page (docs site)
-- [ ] Each package exports an options schema (name, type, default, min/max/step, group, description)
+- [ ] Each package exports an options schema (name, type, default, min/max/step, group, description) — spacetime-grid done (`SPACETIME_GRID_SCHEMA`); skyline to do
 - [ ] Generate the docs props tables from the same schema
 - [ ] `/sandbox` page: full-size live canvas + control panel (bottom sheet on phones)
 - [ ] Component switcher: grid, skyline, grid + skyline

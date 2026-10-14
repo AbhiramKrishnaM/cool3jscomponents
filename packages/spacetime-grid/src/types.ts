@@ -15,10 +15,6 @@ export interface SpacetimeGridTheme {
   fresnel: ColorRepresentation;
 }
 
-export interface SpacetimeGridOptions {
-  theme?: Partial<SpacetimeGridTheme>;
-}
-
 export interface GridFrame {
   t: number;
   dt: number;

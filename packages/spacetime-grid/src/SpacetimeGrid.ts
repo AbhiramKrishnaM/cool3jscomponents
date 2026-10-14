@@ -19,49 +19,33 @@ import {
   WebGLRenderer,
 } from "three";
 import {
-  CAMERA_EASE,
   CAMERA_POSE,
-  CELL,
-  COLS,
-  COMPACT_BREAKPOINT,
-  FILL,
-  FOG_FAR,
-  FOG_NEAR,
   GLOW_BRIGHTEN,
   GLOW_LIFT,
+  GROUND_TILT,
   LAYOUT,
   MAX_EXTRA_WELLS,
   MAX_FRAME_DT,
-  MAX_PIXEL_RATIO,
   MAX_RIPPLES,
-  RIPPLE_HEIGHT,
-  RIPPLE_LIFETIME,
-  RIPPLE_SPEED,
-  RIPPLE_WIDTH,
-  ROWS,
-  TILE_OPACITY,
-  WELL_DEPTH,
-  WELL_EASE,
-  WELL_RADIUS,
+  SWAY_SPEED,
 } from "./constants";
+import {
+  DEFAULT_THEME,
+  resolveSettings,
+  type SpacetimeGridLiveOptions,
+  type SpacetimeGridOptions,
+  type SpacetimeGridSettings,
+} from "./options";
 import { gridFrag, gridVert } from "./shaders";
 import type {
   CameraPose,
   GridColors,
   GridFrame,
   GridPlugin,
-  SpacetimeGridOptions,
   SpacetimeGridTheme,
   WellOptions,
 } from "./types";
 import { createWaveField, prepareWaveFrame, waveHeightAt, type WaveField } from "./waves";
-
-export const DEFAULT_THEME: SpacetimeGridTheme = {
-  base: "#0c1f33",
-  hover: "#43d9ad",
-  fog: "#011627",
-  fresnel: "#bfe9ff",
-};
 
 export const DEFAULT_CAMERA_POSE: CameraPose = {
   position: CAMERA_POSE.pos,
@@ -87,19 +71,22 @@ export class SpacetimeGrid {
   readonly scene: Scene;
   readonly camera: PerspectiveCamera;
   readonly group: Group;
-  readonly cols = COLS;
-  readonly rows = ROWS;
-  readonly cellSize = CELL;
+  readonly cols: number;
+  readonly rows: number;
+  readonly cellSize: number;
   readonly centers: Float32Array;
   readonly heights: Float32Array;
   readonly glow: Float32Array;
   readonly colors: GridColors;
-  readonly motionAllowed: boolean;
 
   private readonly mesh: InstancedMesh<PlaneGeometry, ShaderMaterial>;
   private readonly uniforms: GridUniforms;
   private readonly fog: Fog;
   private readonly theme: SpacetimeGridTheme;
+  private readonly opts: SpacetimeGridSettings;
+  private readonly motionQuery: MediaQueryList;
+  private motion = false;
+  private waveTime = 0;
   private readonly baseColor = new Color();
   private readonly hoverColor = new Color();
   private readonly well: Float32Array;
@@ -141,6 +128,7 @@ export class SpacetimeGrid {
   private readonly resizeObserver: ResizeObserver;
   private readonly visibilityObserver: IntersectionObserver;
   private readonly finePointer: boolean;
+  private readonly count: number;
   private pointerActive = false;
   private pointerX = 0;
   private pointerY = 0;
@@ -154,8 +142,14 @@ export class SpacetimeGrid {
 
   constructor(target: HTMLElement, options: SpacetimeGridOptions = {}) {
     this.theme = { ...DEFAULT_THEME, ...options.theme };
+    this.opts = resolveSettings(options);
+    this.cols = this.opts.cols;
+    this.rows = this.opts.rows;
+    this.cellSize = this.opts.cellSize;
+    this.count = this.cols * this.rows;
     this.colors = { base: this.baseColor, hover: this.hoverColor };
-    this.motionAllowed = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    this.motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    this.motion = this.computeMotion();
     this.finePointer = window.matchMedia("(pointer: fine)").matches;
 
     if (target instanceof HTMLCanvasElement) {
@@ -174,21 +168,21 @@ export class SpacetimeGrid {
 
     const { width, height } = this.measure();
     this.renderer = new WebGLRenderer({ canvas: this.canvas, antialias: true, alpha: true });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, MAX_PIXEL_RATIO));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.opts.maxPixelRatio));
     this.renderer.setSize(width, height, false);
 
     this.scene = new Scene();
-    this.fog = new Fog(this.theme.fog, FOG_NEAR, FOG_FAR);
+    this.fog = new Fog(this.theme.fog, this.opts.fogNear, this.opts.fogFar);
     this.scene.fog = this.fog;
 
-    this.camera = new PerspectiveCamera(50, width / height, 0.1, 100);
+    this.camera = new PerspectiveCamera(this.opts.fov, width / height, 0.1, 100);
     this.setCameraTarget(DEFAULT_CAMERA_POSE, { immediate: true });
 
     this.group = new Group();
-    this.group.rotation.x = -Math.PI * 0.42;
+    this.group.rotation.x = GROUND_TILT;
     this.scene.add(this.group);
 
-    const count = COLS * ROWS;
+    const count = this.count;
     this.centers = new Float32Array(count * 2);
     this.heights = new Float32Array(count);
     this.glow = new Float32Array(count);
@@ -199,7 +193,7 @@ export class SpacetimeGrid {
     this.uniforms = {
       ...UniformsUtils.clone(UniformsLib.fog),
       uFresnelColor: { value: new Color() },
-      uOpacity: { value: TILE_OPACITY },
+      uOpacity: { value: this.opts.tileOpacity },
     };
     this.mesh = this.buildMesh(count);
     this.group.add(this.mesh);
@@ -213,17 +207,47 @@ export class SpacetimeGrid {
     document.documentElement.addEventListener("mouseleave", this.onMouseLeave);
     window.addEventListener("pointerdown", this.onPointerDown, { passive: true });
     document.addEventListener("visibilitychange", this.updateRunning);
+    this.motionQuery.addEventListener("change", this.onMotionPreference);
     this.visibilityObserver = new IntersectionObserver(this.onIntersect);
     this.visibilityObserver.observe(this.canvas);
 
     this.startTime = performance.now();
     this.pausedAt = this.startTime;
-    if (this.motionAllowed) this.updateRunning();
+    if (this.motion) this.updateRunning();
     else this.renderStill();
   }
 
   get isRunning(): boolean {
     return this.running;
+  }
+
+  get motionAllowed(): boolean {
+    return this.motion;
+  }
+
+  get settings(): Readonly<SpacetimeGridSettings> {
+    return this.opts;
+  }
+
+  setOptions(options: SpacetimeGridLiveOptions): void {
+    const { theme, ...rest } = options;
+    for (const key of Object.keys(rest) as (keyof typeof rest)[]) {
+      const value = rest[key];
+      if (value !== undefined && key in this.opts) (this.opts as unknown as Record<string, unknown>)[key] = value;
+    }
+    this.fog.near = this.opts.fogNear;
+    this.fog.far = this.opts.fogFar;
+    this.uniforms.uOpacity.value = this.opts.tileOpacity;
+    if (this.camera.fov !== this.opts.fov) {
+      this.camera.fov = this.opts.fov;
+      this.camera.updateProjectionMatrix();
+    }
+    if (!this.opts.cursorWell) this.pointerActive = false;
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.opts.maxPixelRatio));
+    this.resize();
+    if (theme) this.setTheme(theme);
+    this.syncMotion();
+    this.renderStill();
   }
 
   use(plugin: GridPlugin): () => void {
@@ -249,18 +273,18 @@ export class SpacetimeGrid {
   }
 
   addWell(clientX: number, clientY: number, options: WellOptions = {}): void {
-    if (!this.motionAllowed || this.extraWellCount >= MAX_EXTRA_WELLS) return;
+    if (!this.motion || this.extraWellCount >= MAX_EXTRA_WELLS) return;
     const strength = options.strength ?? 1;
     if (strength <= 0) return;
     const i = this.extraWellCount++;
     this.wellClientX[i] = clientX;
     this.wellClientY[i] = clientY;
-    this.wellRadius[i] = options.radius ?? WELL_RADIUS;
-    this.wellDepth[i] = (options.depth ?? WELL_DEPTH) * strength;
+    this.wellRadius[i] = options.radius ?? this.opts.wellRadius;
+    this.wellDepth[i] = (options.depth ?? this.opts.wellDepth) * strength;
   }
 
   ripple(clientX: number, clientY: number, strength = 1): void {
-    if (!this.motionAllowed) return;
+    if (!this.motion) return;
     if (!this.clientToNdc(clientX, clientY)) return;
     this.updateGroundPlane();
     if (this.groundPointAt(this.ndc.x, this.ndc.y, this.groundPoint)) {
@@ -310,6 +334,7 @@ export class SpacetimeGrid {
     this.resizeObserver.disconnect();
     this.visibilityObserver.disconnect();
     document.removeEventListener("visibilitychange", this.updateRunning);
+    this.motionQuery.removeEventListener("change", this.onMotionPreference);
     window.removeEventListener("mousemove", this.onMouseMove);
     document.documentElement.removeEventListener("mouseleave", this.onMouseLeave);
     window.removeEventListener("pointerdown", this.onPointerDown);
@@ -329,7 +354,32 @@ export class SpacetimeGrid {
   }
 
   private renderStill(): void {
-    if (!this.motionAllowed && !this.destroyed) this.renderFrame(0);
+    if (!this.motion && !this.destroyed) this.renderFrame(0);
+  }
+
+  private computeMotion(): boolean {
+    const mode = this.opts.reducedMotion;
+    if (mode === "always") return false;
+    if (mode === "never") return true;
+    return !this.motionQuery.matches;
+  }
+
+  private readonly onMotionPreference = (): void => {
+    this.syncMotion();
+  };
+
+  private syncMotion(): void {
+    const motion = this.computeMotion();
+    if (motion === this.motion) return;
+    this.motion = motion;
+    if (!motion) {
+      this.pointerActive = false;
+      this.rippleCount = 0;
+      this.extraWellCount = 0;
+      this.well.fill(0);
+    }
+    this.updateRunning();
+    this.renderStill();
   }
 
   private snapCamera(): void {
@@ -347,20 +397,22 @@ export class SpacetimeGrid {
   }
 
   private fillCenters(): void {
-    const w = COLS * CELL;
-    const h = ROWS * CELL;
+    const { cols, rows, cellSize } = this;
+    const w = cols * cellSize;
+    const h = rows * cellSize;
     let i = 0;
-    for (let row = 0; row < ROWS; row++) {
-      for (let col = 0; col < COLS; col++) {
-        this.centers[i * 2] = col * CELL - w / 2 + CELL / 2;
-        this.centers[i * 2 + 1] = row * CELL - h / 2 + CELL / 2;
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        this.centers[i * 2] = col * cellSize - w / 2 + cellSize / 2;
+        this.centers[i * 2 + 1] = row * cellSize - h / 2 + cellSize / 2;
         i++;
       }
     }
   }
 
   private buildMesh(count: number): InstancedMesh<PlaneGeometry, ShaderMaterial> {
-    const geometry = new PlaneGeometry(CELL * FILL, CELL * FILL);
+    const tile = this.cellSize * this.opts.fill;
+    const geometry = new PlaneGeometry(tile, tile);
     const material = new ShaderMaterial({
       vertexShader: gridVert,
       fragmentShader: gridFrag,
@@ -385,13 +437,13 @@ export class SpacetimeGrid {
   }
 
   private applyLayout(width: number): void {
-    const layout = width < COMPACT_BREAKPOINT ? LAYOUT.compact : LAYOUT.wide;
+    const layout = width < this.opts.compactBreakpoint ? LAYOUT.compact : LAYOUT.wide;
     this.group.position.set(0, layout.y, layout.z);
     this.group.scale.setScalar(layout.scale);
   }
 
   private readonly onMouseMove = (e: MouseEvent): void => {
-    if (!this.finePointer || !this.motionAllowed) return;
+    if (!this.finePointer || !this.motion || !this.opts.cursorWell) return;
     this.pointerActive = true;
     this.pointerX = e.clientX;
     this.pointerY = e.clientY;
@@ -402,7 +454,7 @@ export class SpacetimeGrid {
   };
 
   private readonly onPointerDown = (e: PointerEvent): void => {
-    this.ripple(e.clientX, e.clientY, 1);
+    if (this.opts.ripples) this.ripple(e.clientX, e.clientY, 1);
   };
 
   private clientToNdc(clientX: number, clientY: number): boolean {
@@ -430,7 +482,7 @@ export class SpacetimeGrid {
 
   private resolveWells(): number {
     let count = 0;
-    if (this.pointerActive) count = this.resolveWell(count, this.pointerX, this.pointerY, WELL_RADIUS, WELL_DEPTH);
+    if (this.pointerActive) count = this.resolveWell(count, this.pointerX, this.pointerY, this.opts.wellRadius, this.opts.wellDepth);
     for (let i = 0; i < this.extraWellCount; i++) {
       count = this.resolveWell(count, this.wellClientX[i], this.wellClientY[i], this.wellRadius[i], this.wellDepth[i]);
     }
@@ -469,7 +521,8 @@ export class SpacetimeGrid {
 
   private expireRipples(t: number): void {
     let expired = 0;
-    while (expired < this.rippleCount && t - this.rippleStart[expired] >= RIPPLE_LIFETIME) expired++;
+    const lifetime = this.opts.rippleLifetime;
+    while (expired < this.rippleCount && t - this.rippleStart[expired] >= lifetime) expired++;
     if (expired) this.dropOldestRipples(expired);
   }
 
@@ -481,7 +534,7 @@ export class SpacetimeGrid {
   };
 
   private readonly updateRunning = (): void => {
-    const shouldRun = this.motionAllowed && !this.destroyed && this.onScreen && !document.hidden;
+    const shouldRun = this.motion && !this.destroyed && this.onScreen && !document.hidden;
     if (shouldRun) this.start();
     else this.stop();
   };
@@ -506,20 +559,22 @@ export class SpacetimeGrid {
   };
 
   private renderFrame(t: number): void {
-    const { frame, plugins } = this;
+    const { frame, plugins, opts } = this;
+    const elapsed = Math.max(0, t - this.lastT);
     this.currentT = t;
     frame.t = t;
-    frame.dt = Math.min(MAX_FRAME_DT, Math.max(0, t - this.lastT));
-    frame.motion = this.motionAllowed;
+    frame.dt = Math.min(MAX_FRAME_DT, elapsed);
+    frame.motion = this.motion;
     this.lastT = t;
+    if (this.motion) this.waveTime += elapsed * opts.waveSpeed;
 
-    this.group.rotation.z = this.motionAllowed ? Math.sin(t * 0.12) * 0.03 : 0;
+    this.group.rotation.z = this.motion ? Math.sin(t * SWAY_SPEED) * opts.sway : 0;
 
     for (let p = 0; p < plugins.length; p++) plugins[p].plugin.beforeFrame?.(frame);
 
-    if (this.motionAllowed) {
-      this.cameraPos.lerp(this.targetPos, CAMERA_EASE);
-      this.cameraLook.lerp(this.targetLook, CAMERA_EASE);
+    if (this.motion) {
+      this.cameraPos.lerp(this.targetPos, opts.cameraEase);
+      this.cameraLook.lerp(this.targetLook, opts.cameraEase);
       this.camera.position.copy(this.cameraPos);
       this.camera.lookAt(this.cameraLook);
     } else {
@@ -529,14 +584,21 @@ export class SpacetimeGrid {
     this.updateGroundPlane();
     const wellCount = this.resolveWells();
     this.expireRipples(t);
-    prepareWaveFrame(this.waves, t);
+    prepareWaveFrame(this.waves, this.waveTime);
 
     const { centers, heights, glow, well, baseColor, hoverColor } = this;
     const { activeX, activeY, activeRadiusSq, activeDepth } = this;
     const matrices = this.mesh.instanceMatrix.array as Float32Array;
     const colors = (this.mesh.instanceColor as InstancedBufferAttribute).array as Float32Array;
     const rippleCount = this.rippleCount;
-    const count = COLS * ROWS;
+    const count = this.count;
+    const waveScale = opts.waveAmplitude / this.waves.weightSum;
+    const wellEase = opts.wellEase;
+    const litDepth = opts.wellDepth > 0 ? opts.wellDepth : 1;
+    const rippleSpeed = opts.rippleSpeed;
+    const rippleWidth = opts.rippleWidth;
+    const rippleHeight = opts.rippleHeight;
+    const rippleLifetime = opts.rippleLifetime;
 
     for (let i = 0; i < count; i++) {
       const cx = centers[i * 2];
@@ -553,23 +615,23 @@ export class SpacetimeGrid {
         }
       }
 
-      well[i] += (target - well[i]) * WELL_EASE;
-      const lit = Math.min(1, well[i] / WELL_DEPTH);
-      const wave = waveHeightAt(this.waves, i);
+      well[i] += (target - well[i]) * wellEase;
+      const lit = Math.min(1, well[i] / litDepth);
+      const wave = waveHeightAt(this.waves, i, waveScale);
 
       let ring = 0;
       for (let r = 0; r < rippleCount; r++) {
         const age = t - this.rippleStart[r];
         const dx = cx - this.rippleX[r];
         const dy = cy - this.rippleY[r];
-        const distToRing = Math.abs(Math.sqrt(dx * dx + dy * dy) - age * RIPPLE_SPEED);
-        const front = Math.max(0, 1 - distToRing / RIPPLE_WIDTH);
-        const decay = Math.max(0, 1 - age / RIPPLE_LIFETIME);
+        const distToRing = Math.abs(Math.sqrt(dx * dx + dy * dy) - age * rippleSpeed);
+        const front = Math.max(0, 1 - distToRing / rippleWidth);
+        const decay = Math.max(0, 1 - age / rippleLifetime);
         ring += front * front * decay * this.rippleStrength[r];
       }
 
       const g = glow[i];
-      const z = wave - well[i] + ring * RIPPLE_HEIGHT + g * GLOW_LIFT;
+      const z = wave - well[i] + ring * rippleHeight + g * GLOW_LIFT;
       heights[i] = z;
       const m = i * 16;
       matrices[m + 12] = cx;
