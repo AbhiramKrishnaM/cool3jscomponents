@@ -19,7 +19,7 @@ See `PLAN.md` for the full plan.
 ## 2. spacetime-grid
 - [x] Port the grid core from `Portfolio/src/components/background/SpaceTimeGrid.vue` (no Vue, no portfolio scroll code)
 - [x] Core effects: idle waves, cursor gravity well, click ripples, fog, theme colours
-- [ ] Keep the per-tile tick allocation-free and trig-free (precomputed sin/cos); pause off-screen / when the tab is hidden
+- [x] Keep the per-tile tick allocation-free and trig-free (precomputed sin/cos); pause off-screen / when the tab is hidden
 - [ ] Plugin/hook API: camera poses per section, extra wells that follow an element, impulses, data overlays
 - [ ] Options: size/density, colours/theme, wave strength, well radius/depth, ripple speed/lifetime, fog, pixel-ratio cap, reduced motion
 - [ ] Wrappers: Vue, React, Web Component

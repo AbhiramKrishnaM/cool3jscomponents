@@ -108,13 +108,17 @@ export class SpacetimeGrid {
   private readonly ownsCanvas: boolean;
   private readonly sizeTarget: HTMLElement;
   private readonly resizeObserver: ResizeObserver;
+  private readonly visibilityObserver: IntersectionObserver;
   private readonly motionAllowed: boolean;
   private readonly finePointer: boolean;
   private pointerActive = false;
   private pointerX = 0;
   private pointerY = 0;
   private frameId = 0;
+  private running = false;
+  private onScreen = true;
   private startTime = 0;
+  private pausedAt = 0;
   private currentT = 0;
   private destroyed = false;
 
@@ -181,10 +185,18 @@ export class SpacetimeGrid {
     window.addEventListener("mousemove", this.onMouseMove, { passive: true });
     document.documentElement.addEventListener("mouseleave", this.onMouseLeave);
     window.addEventListener("pointerdown", this.onPointerDown, { passive: true });
+    document.addEventListener("visibilitychange", this.updateRunning);
+    this.visibilityObserver = new IntersectionObserver(this.onIntersect);
+    this.visibilityObserver.observe(this.canvas);
 
     this.startTime = performance.now();
-    if (this.motionAllowed) this.tick();
+    this.pausedAt = this.startTime;
+    if (this.motionAllowed) this.updateRunning();
     else this.renderFrame(0);
+  }
+
+  get isRunning(): boolean {
+    return this.running;
   }
 
   setTheme(theme: Partial<SpacetimeGridTheme>): void {
@@ -215,8 +227,10 @@ export class SpacetimeGrid {
   destroy(): void {
     if (this.destroyed) return;
     this.destroyed = true;
-    cancelAnimationFrame(this.frameId);
+    this.stop();
     this.resizeObserver.disconnect();
+    this.visibilityObserver.disconnect();
+    document.removeEventListener("visibilitychange", this.updateRunning);
     window.removeEventListener("mousemove", this.onMouseMove);
     document.documentElement.removeEventListener("mouseleave", this.onMouseLeave);
     window.removeEventListener("pointerdown", this.onPointerDown);
@@ -339,6 +353,33 @@ export class SpacetimeGrid {
     let expired = 0;
     while (expired < this.rippleCount && t - this.rippleStart[expired] >= RIPPLE_LIFETIME) expired++;
     if (expired) this.dropOldestRipples(expired);
+  }
+
+  private readonly onIntersect = (entries: IntersectionObserverEntry[]): void => {
+    const entry = entries[entries.length - 1];
+    if (!entry) return;
+    this.onScreen = entry.isIntersecting;
+    this.updateRunning();
+  };
+
+  private readonly updateRunning = (): void => {
+    const shouldRun = this.motionAllowed && !this.destroyed && this.onScreen && !document.hidden;
+    if (shouldRun) this.start();
+    else this.stop();
+  };
+
+  private start(): void {
+    if (this.running) return;
+    this.running = true;
+    this.startTime += performance.now() - this.pausedAt;
+    this.tick();
+  }
+
+  private stop(): void {
+    if (!this.running) return;
+    this.running = false;
+    this.pausedAt = performance.now();
+    cancelAnimationFrame(this.frameId);
   }
 
   private readonly tick = (): void => {
