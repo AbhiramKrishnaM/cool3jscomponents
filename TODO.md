@@ -10,7 +10,7 @@ See `PLAN.md` for the full plan.
 - [ ] **[Abhiram]** `git init` + create the GitHub repo
 
 ## 1. Scaffold the monorepo
-- [ ] Workspace root `package.json`, shared ESLint/TS config
+- [x] Workspace root `package.json`, shared ESLint/TS config
 - [ ] `packages/spacetime-grid` and `packages/contribution-skyline` skeletons with tsup builds (ESM + types)
 - [ ] `three` as a peer dependency
 - [ ] Changesets set up for versioning + publishing
