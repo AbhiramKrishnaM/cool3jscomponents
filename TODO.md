@@ -11,8 +11,8 @@ See `PLAN.md` for the full plan.
 
 ## 1. Scaffold the monorepo
 - [x] Workspace root `package.json`, shared ESLint/TS config
-- [ ] `packages/spacetime-grid` and `packages/contribution-skyline` skeletons with tsup builds (ESM + types)
-- [ ] `three` as a peer dependency
+- [x] `packages/spacetime-grid` and `packages/contribution-skyline` skeletons with tsup builds (ESM + types)
+- [x] `three` as a peer dependency
 - [ ] Changesets set up for versioning + publishing
 - [ ] `apps/docs` — Astro + Starlight shell, styled like the portfolio (Fira Code, `DESIGN.md` tokens)
 
