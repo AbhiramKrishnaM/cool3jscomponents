@@ -33,7 +33,7 @@ See `PLAN.md` for the full plan.
 - [x] Flat 2D calendar component as the lightweight option
 - [x] Options: colours/theme, bar height scale, twinkle on/off, bursts on/off + frequency, reduced motion
 - [x] Wrappers: Vue, React, Web Component
-- [ ] README with usage + screenshots
+- [x] README with usage + screenshots
 
 ## 4. Docs site
 - [ ] Per package: overview, install, quick start, Vue / React / Web Component guides

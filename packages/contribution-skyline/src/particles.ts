@@ -70,10 +70,10 @@ export function stepPool(pool: ParticlePool, dt: number, gravity: number, tint: 
       continue;
     }
     const fade = onLand ? 1 : Math.max(0, life[i] / maxLife[i]);
-    colors[c] = r * fade;
-    colors[c + 1] = g * fade;
-    colors[c + 2] = b * fade;
-    colors[c + 3] = 1;
+    colors[c] = r;
+    colors[c + 1] = g;
+    colors[c + 2] = b;
+    colors[c + 3] = fade;
   }
   pool.points.geometry.attributes.position.needsUpdate = true;
   pool.points.geometry.attributes.color.needsUpdate = true;
