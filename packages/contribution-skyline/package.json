@@ -17,6 +17,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./fetch": {
+      "types": "./dist/fetch.d.ts",
+      "import": "./dist/fetch.js"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {
@@ -31,12 +35,16 @@
     "@types/three": "^0.186.0",
     "three": "^0.186.1",
     "tsup": "~8.5.1",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "@types/node": "22.20.4"
   },
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
     "@abhiramkrishna/spacetime-grid": "workspace:^"
+  },
+  "bin": {
+    "contribution-skyline-fetch": "./dist/cli.js"
   }
 }
