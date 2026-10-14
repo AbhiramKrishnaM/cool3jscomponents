@@ -30,7 +30,7 @@ See `PLAN.md` for the full plan.
 - [x] Standalone mode (own scene) + layer mode on `spacetime-grid`
 - [x] Rise driven by a 0–1 progress value the host controls
 - [x] Fetch helper for server / serverless / build time (username → JSON; optional token for private contributions, never in the browser) — based on `Portfolio/scripts/fetch-contributions.mjs`
-- [ ] Flat 2D calendar component as the lightweight option
+- [x] Flat 2D calendar component as the lightweight option
 - [ ] Options: colours/theme, bar height scale, twinkle on/off, bursts on/off + frequency, reduced motion
 - [ ] Wrappers: Vue, React, Web Component
 - [ ] README with usage + screenshots

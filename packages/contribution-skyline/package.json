@@ -21,6 +21,10 @@
       "types": "./dist/fetch.d.ts",
       "import": "./dist/fetch.js"
     },
+    "./calendar": {
+      "types": "./dist/calendar.d.ts",
+      "import": "./dist/calendar.js"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {

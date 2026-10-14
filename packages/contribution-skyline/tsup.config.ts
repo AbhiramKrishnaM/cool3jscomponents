@@ -11,7 +11,7 @@ const shared = {
 export default defineConfig([
   {
     ...shared,
-    entry: { index: "src/index.ts", fetch: "src/fetch/index.ts" },
+    entry: { index: "src/index.ts", fetch: "src/fetch/index.ts", calendar: "src/calendar/index.ts" },
     clean: true,
     splitting: true,
   },
