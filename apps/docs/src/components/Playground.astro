@@ -1,0 +1,176 @@
+---
+interface Props {
+  kind: "grid" | "skyline";
+  hint?: string;
+}
+
+const { kind, hint } = Astro.props;
+const frameworks = [
+  ["js", "JavaScript"],
+  ["vue", "Vue"],
+  ["react", "React"],
+  ["element", "Web Component"],
+] as const;
+---
+
+<div class="playground not-content" data-playground={kind}>
+  <div class="playground__stage">
+    <div class="playground__canvas" data-stage></div>
+    {hint && <p class="playground__hint">{hint}</p>}
+  </div>
+  <div class="playground__panel" data-panel></div>
+  <div class="playground__code">
+    <div class="playground__bar">
+      <div class="playground__tabs" role="tablist" aria-label="Code format">
+        {frameworks.map(([id, label]) => (
+          <button type="button" role="tab" data-framework={id} aria-selected={id === "js" ? "true" : "false"}>{label}</button>
+        ))}
+      </div>
+      <div class="playground__actions">
+        <button type="button" data-reset>Reset</button>
+        <button type="button" data-copy>Copy</button>
+      </div>
+    </div>
+    <pre><code data-code>Loading…</code></pre>
+  </div>
+</div>
+
+<script>
+  import { initPlaygrounds } from "../playground/init";
+
+  initPlaygrounds();
+</script>
+
+<style>
+  .playground {
+    display: grid;
+    grid-template-columns: 17rem minmax(0, 1fr);
+    grid-template-areas: "stage stage" "panel code";
+    margin-block: 1.5rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--sl-color-black);
+  }
+
+  .playground__stage {
+    grid-area: stage;
+    position: relative;
+    aspect-ratio: 2 / 1;
+    min-height: 15rem;
+    background: var(--playground-stage);
+  }
+
+  .playground__canvas {
+    position: absolute;
+    inset: 0;
+  }
+
+  .playground__hint {
+    position: absolute;
+    left: 0.75rem;
+    bottom: 0.5rem;
+    margin: 0;
+    font-size: var(--sl-text-xs);
+    color: var(--playground-hint);
+    pointer-events: none;
+  }
+
+  .playground__panel {
+    grid-area: panel;
+    padding: 0.5rem;
+    border-top: 1px solid var(--sl-color-gray-5);
+    background: var(--sl-color-gray-6);
+  }
+
+  .playground__code {
+    grid-area: code;
+    min-width: 0;
+    border-top: 1px solid var(--sl-color-gray-5);
+    border-inline-start: 1px solid var(--sl-color-gray-5);
+  }
+
+  .playground__bar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem 0;
+  }
+
+  .playground__tabs,
+  .playground__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .playground button {
+    font: inherit;
+    font-size: var(--sl-text-xs);
+    padding: 0.3rem 0.6rem;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: none;
+    color: var(--sl-color-gray-3);
+    cursor: pointer;
+  }
+
+  .playground button:hover {
+    color: var(--sl-color-white);
+  }
+
+  .playground button[aria-selected="true"] {
+    color: var(--sl-color-white);
+    border-color: var(--sl-color-gray-5);
+    background: var(--sl-color-gray-6);
+  }
+
+  .playground__actions button {
+    border-color: var(--sl-color-gray-5);
+  }
+
+  .playground pre {
+    margin: 0;
+    padding: 0.75rem 1rem 1rem;
+    overflow-x: auto;
+    font-family: var(--__sl-font-mono);
+    font-size: var(--sl-text-code-sm);
+    line-height: 1.6;
+    color: var(--sl-color-gray-2);
+  }
+
+  .playground :global(.tp-rotv) {
+    --tp-blade-value-width: 7.5rem;
+    --tp-base-background-color: var(--sl-color-gray-6);
+    --tp-base-shadow-color: transparent;
+    --tp-base-font-family: var(--__sl-font-mono);
+    --tp-container-background-color: color-mix(in srgb, var(--sl-color-gray-5) 60%, transparent);
+    --tp-container-background-color-active: var(--sl-color-gray-5);
+    --tp-container-background-color-focus: var(--sl-color-gray-5);
+    --tp-container-background-color-hover: var(--sl-color-gray-5);
+    --tp-container-foreground-color: var(--sl-color-gray-2);
+    --tp-groove-foreground-color: var(--sl-color-gray-5);
+    --tp-input-background-color: var(--sl-color-black);
+    --tp-input-background-color-active: var(--sl-color-gray-5);
+    --tp-input-background-color-focus: var(--sl-color-gray-5);
+    --tp-input-background-color-hover: var(--sl-color-gray-5);
+    --tp-input-foreground-color: var(--sl-color-white);
+    --tp-label-foreground-color: var(--sl-color-gray-3);
+    --tp-monitor-background-color: var(--sl-color-black);
+    --tp-monitor-foreground-color: var(--sl-color-gray-3);
+    --tp-button-background-color: var(--sl-color-accent);
+    --tp-button-foreground-color: var(--sl-color-black);
+  }
+
+  @media (max-width: 50rem) {
+    .playground {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: "stage" "panel" "code";
+    }
+
+    .playground__code {
+      border-inline-start: none;
+    }
+  }
+</style>

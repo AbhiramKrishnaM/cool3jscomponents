@@ -7,10 +7,17 @@ sidebar:
 ---
 
 import { Card, CardGrid, LinkCard } from "@astrojs/starlight/components";
+import Playground from "../../../components/Playground.astro";
 
 `@abhiramkrishna/contribution-skyline` draws a year of GitHub contributions as glowing bars. They rise week by week, each bar twinkles on its own 13–21 second cycle, and the busiest days flash and burst into pixels that fall and shatter on the floor. It's the About section of [abhiramkrishna.com](https://www.abhiramkrishna.com).
 
 ![Bars rising from a tile floor, with sparks bursting](../../../assets/skyline/standalone.png)
+
+## Try it
+
+Change the controls and the code below updates to match, ready to copy.
+
+<Playground kind="skyline" hint="Drag Progress to watch the bars rise." />
 
 <CardGrid>
   <Card title="Standalone" icon="laptop">

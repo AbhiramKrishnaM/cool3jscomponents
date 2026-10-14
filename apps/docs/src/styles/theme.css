@@ -1,4 +1,6 @@
 :root {
+  --playground-stage: #011627;
+  --playground-hint: #7890aa;
   --sl-font: "Fira Code", ui-monospace, monospace;
   --sl-font-mono: "Fira Code", ui-monospace, monospace;
 

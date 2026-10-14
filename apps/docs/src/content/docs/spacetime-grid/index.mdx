@@ -7,10 +7,17 @@ sidebar:
 ---
 
 import { Card, CardGrid, LinkCard } from "@astrojs/starlight/components";
+import Playground from "../../../components/Playground.astro";
 
 `@abhiramkrishna/spacetime-grid` is the animated background from [abhiramkrishna.com](https://www.abhiramkrishna.com). It's a field of tiles: idle waves roll across it, the tiles under your cursor sink into a gravity well, and a click sends an energy ring across the surface.
 
 ![Tiles sinking into a gravity well under the cursor](../../../assets/grid/well.png)
+
+## Try it
+
+Change the controls and the code below updates to match, ready to copy.
+
+<Playground kind="grid" hint="Move your cursor over the grid and click." />
 
 <CardGrid>
   <Card title="Cursor gravity well" icon="random">
