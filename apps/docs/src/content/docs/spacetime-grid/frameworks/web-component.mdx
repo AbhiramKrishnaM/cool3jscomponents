@@ -1,0 +1,49 @@
+---
+title: Web Component
+description: Use the spacetime grid as a custom element in any framework, or none.
+sidebar:
+  order: 3
+---
+
+```ts
+import { defineSpacetimeGridElement } from "@abhiramkrishna/spacetime-grid/element";
+
+defineSpacetimeGridElement();
+```
+
+```html
+<spacetime-grid
+  wave-amplitude="0.12"
+  theme-hover="#43d9ad"
+  theme-fog="#011627"
+  style="position: fixed; inset: 0; z-index: -1"
+></spacetime-grid>
+```
+
+**Registration:** nothing is registered until you call `defineSpacetimeGridElement()`, so importing the module has no side effects. To use a different tag, pass it: `defineSpacetimeGridElement("my-grid")`. The element renders as a block and needs a size from your CSS.
+
+## Attributes
+
+- **Options:** every [option](/spacetime-grid/options/) is a kebab-case attribute, such as `wave-amplitude`, `well-radius` or `reduced-motion`.
+- **On/off options:** a bare attribute (`cursor-well`) means `true`; `cursor-well="false"` turns it off.
+- **Theme colours:** `theme-base`, `theme-hover`, `theme-fog` and `theme-fresnel`.
+
+Changing an attribute updates the grid live. Changing `cols`, `rows`, `cell-size` or `fill` creates a new grid.
+
+## Properties and events
+
+```ts
+const el = document.querySelector("spacetime-grid")!;
+
+el.options = { waveAmplitude: 0.2, theme: { hover: "#5ee6ff" } };
+const remove = el.use(myPlugin);
+el.grid?.ripple(100, 100);
+el.addEventListener("ready", (event) => console.log(event.detail));
+```
+
+- **`options`:** takes a full options object, and wins over attributes.
+- **`use(plugin)`:** adds a [plugin](/spacetime-grid/plugins/). Plugins move across when the grid is rebuilt.
+- **`grid`:** the current `SpacetimeGrid` instance, or `null` while the element isn't connected.
+- **`ready`:** fires with the instance each time one is created.
+
+Removing the element from the page destroys the grid; adding it back creates a new one.

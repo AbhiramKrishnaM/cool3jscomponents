@@ -1,0 +1,60 @@
+---
+title: React
+description: Use the spacetime grid as a React component.
+sidebar:
+  order: 2
+---
+
+```tsx
+import { useRef } from "react";
+import { SpacetimeGrid } from "@abhiramkrishna/spacetime-grid/react";
+import type { SpacetimeGrid as Grid } from "@abhiramkrishna/spacetime-grid";
+
+export function Background() {
+  const grid = useRef<Grid>(null);
+  return (
+    <div className="background">
+      <SpacetimeGrid
+        ref={grid}
+        waveAmplitude={0.12}
+        theme={{ hover: "#43d9ad", fog: "#011627" }}
+        onReady={(g) => g.ripple(innerWidth / 2, innerHeight / 2)}
+      />
+    </div>
+  );
+}
+```
+
+Requires React 18 or later. It works in StrictMode, where the development-only double mount cleans up after itself.
+
+## Props
+
+- **Options:** every [option](/spacetime-grid/options/) is a prop. Leave one out to use its default.
+- **`theme`:** any of `base`, `hover`, `fog` and `fresnel`.
+- **`plugins`:** an array of [plugins](/spacetime-grid/plugins/).
+- **`onReady`:** called with the instance.
+- **`className` and `style`:** set on the wrapping `<div>`, which fills its parent by default.
+
+**Updates:**
+- Live props update the grid in place.
+- Changing `cols`, `rows`, `cellSize` or `fill` creates a new grid. The `ref` then points at the new instance, and `onReady` fires again.
+
+## Plugins
+
+Keep the `plugins` array stable. A new array on every render removes and re-adds the plugins:
+
+```tsx
+import { useMemo } from "react";
+import { elementWell, scrollCamera } from "@abhiramkrishna/spacetime-grid";
+
+const plugins = useMemo(() => [
+  elementWell(() => document.querySelector(".dialog"), { radius: 3 }),
+  scrollCamera({ poses, initial: "hero", segments }),
+], []);
+
+<SpacetimeGrid plugins={plugins} />;
+```
+
+## Next.js and server rendering
+
+The component renders an empty `<div>` on the server and creates the grid in an effect, so it's safe in server-rendered pages. In the App Router, put it in a `"use client"` component. To keep three.js out of the first load, use `next/dynamic` with `ssr: false`.

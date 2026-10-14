@@ -1,0 +1,37 @@
+---
+title: Contribution skyline
+description: A year of GitHub contributions as glowing 3D bars, on their own, on the spacetime grid, or as a flat calendar.
+sidebar:
+  label: Overview
+  order: 1
+---
+
+import { Card, CardGrid, LinkCard } from "@astrojs/starlight/components";
+
+`@abhiramkrishna/contribution-skyline` draws a year of GitHub contributions as glowing bars. They rise week by week, each bar twinkles on its own 13–21 second cycle, and the busiest days flash and burst into pixels that fall and shatter on the floor. It's the About section of [abhiramkrishna.com](https://www.abhiramkrishna.com).
+
+![Bars rising from a tile floor, with sparks bursting](../../../assets/skyline/standalone.png)
+
+<CardGrid>
+  <Card title="Standalone" icon="laptop">
+    A self-contained scene in any container. The camera fits the whole year to its size.
+  </Card>
+  <Card title="On the spacetime grid" icon="puzzle">
+    A layer whose bars stand on the animated tiles and light up the days beneath them.
+  </Card>
+  <Card title="2D calendar" icon="list-format">
+    Plain HTML with no three.js, for phones and server-rendered pages.
+  </Card>
+  <Card title="No token needed" icon="approve-check">
+    Public contributions come from the same page github.com shows. A token only matters for private ones, and never reaches the browser.
+  </Card>
+</CardGrid>
+
+| On the spacetime grid | Rising (`progress: 0.45`) |
+|---|---|
+| ![Bars standing on the animated grid](../../../assets/skyline/layer.png) | ![Bars partway through rising](../../../assets/skyline/rising.png) |
+
+![A flat contribution calendar](../../../assets/skyline/calendar.png)
+
+<LinkCard title="Getting started" description="Get your data and show the skyline." href="/contribution-skyline/getting-started/" />
+<LinkCard title="Getting the data" description="Build time, serverless or server, and private contributions." href="/contribution-skyline/data/" />

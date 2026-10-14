@@ -1,0 +1,125 @@
+---
+title: Getting started
+description: Install the spacetime grid and put it behind your page.
+sidebar:
+  order: 2
+---
+
+import { Aside, Steps, Tabs, TabItem } from "@astrojs/starlight/components";
+
+<Steps>
+
+1. Install the package and three.js:
+
+   <Tabs syncKey="pm">
+     <TabItem label="npm">
+       ```sh
+       npm install @abhiramkrishna/spacetime-grid three
+       ```
+     </TabItem>
+     <TabItem label="pnpm">
+       ```sh
+       pnpm add @abhiramkrishna/spacetime-grid three
+       ```
+     </TabItem>
+     <TabItem label="yarn">
+       ```sh
+       yarn add @abhiramkrishna/spacetime-grid three
+       ```
+     </TabItem>
+   </Tabs>
+
+   `three` is a peer dependency (version 0.160 or later), so the grid uses your app's copy.
+
+2. Add an element for the grid to fill, and give it a size. For a full-page background:
+
+   ```css
+   .background {
+     position: fixed;
+     inset: 0;
+     z-index: -1;
+   }
+   ```
+
+3. Create the grid:
+
+   <Tabs syncKey="framework">
+     <TabItem label="JavaScript">
+       ```ts
+       import { SpacetimeGrid } from "@abhiramkrishna/spacetime-grid";
+
+       const grid = new SpacetimeGrid(document.querySelector(".background")!);
+       ```
+     </TabItem>
+     <TabItem label="Vue">
+       ```vue
+       <script setup lang="ts">
+       import { SpacetimeGrid } from "@abhiramkrishna/spacetime-grid/vue";
+       </script>
+
+       <template>
+         <div class="background"><SpacetimeGrid /></div>
+       </template>
+       ```
+     </TabItem>
+     <TabItem label="React">
+       ```tsx
+       import { SpacetimeGrid } from "@abhiramkrishna/spacetime-grid/react";
+
+       export function Background() {
+         return <div className="background"><SpacetimeGrid /></div>;
+       }
+       ```
+     </TabItem>
+     <TabItem label="Web Component">
+       ```ts
+       import { defineSpacetimeGridElement } from "@abhiramkrishna/spacetime-grid/element";
+
+       defineSpacetimeGridElement();
+       ```
+
+       ```html
+       <spacetime-grid class="background"></spacetime-grid>
+       ```
+     </TabItem>
+   </Tabs>
+
+4. Match the fog to your background colour, so tiles fade into the page instead of ending at a hard edge:
+
+   ```ts
+   new SpacetimeGrid(el, { theme: { fog: "#011627" } });
+   ```
+
+</Steps>
+
+## How it fits on the page
+
+- **Size:** the grid adds a `<canvas>` that fills its element and follows its size. You can also pass a `<canvas>` you already have.
+- **Input:** the cursor and clicks are tracked on `window`, so the grid still reacts when it sits behind your content with `z-index: -1`. Positions are mapped onto the canvas, and anything outside it is ignored.
+- **Phone layout:** below 1024px of canvas width (`compactBreakpoint`), the grid drops lower and shrinks a little, which suits phones.
+
+<Aside type="tip">
+  The cursor well only reacts to a mouse. On touch screens, taps still send ripples.
+</Aside>
+
+## Changing it while it runs
+
+```ts
+grid.setOptions({ waveAmplitude: 0.15, wellRadius: 3 });
+grid.setTheme({ hover: "#5ee6ff" });
+grid.ripple(window.innerWidth / 2, window.innerHeight / 2);
+```
+
+Most options change live. `cols`, `rows`, `cellSize` and `fill` set the size of the tile mesh, so changing them means creating a new grid; the framework wrappers do that for you. See [Options](/spacetime-grid/options/) for the full list.
+
+## Cleaning up
+
+```ts
+grid.destroy();
+```
+
+`destroy()` stops the loop, removes the listeners and frees the GPU resources. The wrappers call it when they unmount.
+
+## Reduced motion
+
+Visitors with `prefers-reduced-motion: reduce` get a single still frame of the grid, with no waves, well or ripples. If they change the setting while the page is open, the grid switches over. Set `reducedMotion: "always"` or `"never"` to override this.

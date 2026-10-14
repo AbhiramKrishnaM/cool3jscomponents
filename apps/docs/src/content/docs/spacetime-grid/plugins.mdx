@@ -1,0 +1,120 @@
+---
+title: Plugins
+description: Scroll-driven camera moves, wells that follow elements, impulses and your own per-frame hooks.
+sidebar:
+  order: 4
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+Plugins hook into every frame of the grid. Add one with `grid.use(plugin)`, which returns a function that removes it. The package comes with two plugins, and you can write your own.
+
+## `scrollCamera`
+
+Moves the camera between named poses as the page scrolls. On abhiramkrishna.com, this is how the view changes between sections.
+
+```ts
+import { SpacetimeGrid, scrollCamera } from "@abhiramkrishna/spacetime-grid";
+
+const poses = {
+  hero: { position: [0, 1.3, 6], lookAt: [0, -1, -3] },
+  projects: { position: [0.6, 0.75, 4.6], lookAt: [0.5, -1.25, -3.4] },
+  about: { position: [1.7, 1.15, 5], lookAt: [1.4, -1, -3] },
+} as const;
+
+grid.use(scrollCamera({
+  poses,
+  initial: "hero",
+  segments: () => {
+    const projects = document.getElementById("projects")!.offsetTop;
+    const about = document.getElementById("about")!.offsetTop;
+    return [
+      { from: "hero", to: "projects", start: 0, end: projects },
+      { from: "projects", to: "about", start: about - innerHeight, end: about },
+    ];
+  },
+}));
+```
+
+- **Segments:** each segment eases the camera from one pose to the next while the scroll position moves from `start` to `end`, in pixels. `segments` runs every frame, so it always uses fresh offsets.
+- **Smoothing:** the grid eases the camera toward its target using `cameraEase`, so jumps in scroll position still look smooth.
+- **Other scroll sources:** pass `scroll: () => number` to use something other than `window.scrollY`, such as a smooth-scroll library.
+- **Reduced motion:** the camera stays on `initial`.
+
+## `elementWell`
+
+Adds a gravity well under an element, such as a dialog sliding in or a card being dragged.
+
+```ts
+import { elementWell } from "@abhiramkrishna/spacetime-grid";
+
+grid.use(elementWell(() => document.querySelector(".terminal"), {
+  radius: 4.2,
+  depth: 1.15,
+  strength: () => Math.sin(Math.PI * flightProgress),
+}));
+```
+
+- **Position:** the well sits under the centre of the element's bounding box, and moves with it every frame.
+- **Strength:** `strength` scales the well's depth, and at `0` the well is off. Use it to fade the effect in and out.
+- **Limit:** a grid takes up to four extra wells per frame, plus the cursor.
+
+## Impulses
+
+To send a one-off ripple from a screen point, for example when something lands on the grid, call `ripple()`:
+
+```ts
+grid.ripple(clientX, clientY, 1.4);
+```
+
+The last argument is the strength (default `1`). Ripples ignore the `ripples` option, which only turns off click ripples.
+
+## Writing a plugin
+
+A plugin is an object with any of these hooks:
+
+```ts
+import type { GridPlugin } from "@abhiramkrishna/spacetime-grid";
+
+const tile = 30 * grid.cols + 32;
+
+const pulse: GridPlugin = {
+  setup(g) {
+    return () => g.glow.fill(0);
+  },
+  beforeFrame({ t }) {
+    grid.glow[tile] = 0.5 + 0.5 * Math.sin(t * 2);
+  },
+};
+
+grid.use(pulse);
+```
+
+| Hook | When it runs | Use it to |
+|---|---|---|
+| `setup(grid)` | When the plugin is added | Add meshes to `grid.group`. Return a cleanup function. |
+| `beforeFrame(frame)` | Every frame, before the tiles move | Set a camera target, add wells, write `grid.glow`. |
+| `afterFrame(frame)` | Every frame, after the tiles move | Read `grid.heights` to place things on the tiles. |
+| `themeChanged(colors)` | When the plugin is added and on every theme change | Pick up the resolved `base` and `hover` colours. |
+
+`frame` is `{ t, dt, motion }`: the time in seconds, the time since the last frame (capped at 0.05 s), and whether motion is allowed.
+
+### Working with tiles
+
+- **Tile `i`** is `row * grid.cols + col`, and row 0 is the edge nearest the camera.
+- **`grid.centers`** holds each tile's position in the grid's local plane, as `x, y` pairs.
+- **`grid.heights`** holds each tile's current height, valid in `afterFrame`.
+- **`grid.glow`** takes a value from 0 to 1 per tile. A glowing tile lifts slightly and takes the highlight colour.
+- **Your own meshes** go in `grid.group`. Its local XY plane is the grid surface, so they tilt and sway with it.
+
+<Aside type="caution">
+  Hooks run on every frame, so avoid creating objects or arrays in them. Reuse scratch values instead, as the built-in plugins do.
+</Aside>
+
+### Placing things from a screen point
+
+`grid.screenToGround(ndcX, ndcY, { pose })` returns where a screen point (−1 to 1 on each axis) meets the grid, in grid-local coordinates. Pass `pose` to ask from a different camera pose. The contribution skyline uses this to sit in view at the About pose.
+
+### Reduced motion
+
+Plugins still run during the still frame, but `frame.motion` is `false`. Wells are ignored, and the camera jumps straight to its target. If your plugin's state changes while motion is off, call `grid.invalidate()` to redraw the frame.

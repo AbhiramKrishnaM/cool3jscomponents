@@ -1,0 +1,38 @@
+---
+title: API
+description: Exports of @abhiramkrishna/contribution-skyline and its entry points.
+sidebar:
+  order: 7
+---
+
+| Import | Exports |
+|---|---|
+| `@abhiramkrishna/contribution-skyline` | `ContributionSkyline`, `contributionSkyline()`, `SkylineLayer`, `CONTRIBUTION_SKYLINE_SCHEMA`, `DEFAULT_SKYLINE_SETTINGS`, `DEFAULT_STANDALONE_SETTINGS`, types |
+| `…/calendar` | `renderContributionCalendar`, `contributionCalendarHTML` |
+| `…/fetch` | `fetchContributions`, `createContributionsHandler`, `parseContributionsPage`, `isValidUsername` |
+| `…/vue`, `…/react` | `ContributionSkyline`, `ContributionCalendar` |
+| `…/element` | `defineContributionSkylineElement`, `defineContributionCalendarElement` |
+| CLI | `contribution-skyline-fetch <username> [--out file]` |
+
+## `new ContributionSkyline(container, data, options?)`
+
+The standalone scene. See [Getting started](/contribution-skyline/getting-started/#the-standalone-scene) for its methods.
+
+## `contributionSkyline(data, options?)`
+
+Returns a `SkylineLayer` to pass to `grid.use()`. Its options are the [skyline options](/contribution-skyline/options/), plus `origin` or `anchor` for [placement](/contribution-skyline/layer/#placement).
+
+| Member | |
+|---|---|
+| `setProgress(progress)` | A number from 0 to 1, or a function read every frame. |
+| `setOptions(options)` | Change any skyline option. |
+| `setData(data)` | Re-map new data onto the grid. |
+| `settings` | The current options. |
+
+## `fetchContributions(username, { token, fetch, signal })`
+
+Returns `Promise<ContributionData>`. It uses the public contributions page, or GitHub's GraphQL API when given a `token`. It throws on an invalid or unknown username, on network errors, or when given a token in a browser.
+
+## `createContributionsHandler({ user, token, cacheSeconds, fetch })`
+
+Returns `(request: Request) => Promise<Response>`. See [Getting the data](/contribution-skyline/data/#from-a-serverless-function).

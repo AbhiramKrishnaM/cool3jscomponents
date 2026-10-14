@@ -1,0 +1,50 @@
+---
+title: API
+description: Every method and property of the SpacetimeGrid class.
+sidebar:
+  order: 5
+---
+
+## `new SpacetimeGrid(target, options?)`
+
+- **`target`:** an `HTMLElement`, which gets a canvas that fills it, or an `HTMLCanvasElement` you already have.
+- **`options`:** any of the [options](/spacetime-grid/options/), plus `theme`.
+
+## Methods
+
+| Method | |
+|---|---|
+| `setOptions(options)` | Change live options and theme colours. |
+| `setTheme(theme)` | Change some or all of `base`, `hover`, `fog` and `fresnel`. |
+| `use(plugin)` | Add a [plugin](/spacetime-grid/plugins/). Returns a function that removes it. |
+| `ripple(clientX, clientY, strength = 1)` | Send a ripple from a point in the viewport. |
+| `addWell(clientX, clientY, { radius, depth, strength })` | Add a well for the current frame. Call it from `beforeFrame`. At most 4 per frame, plus the cursor. |
+| `setCameraTarget(pose, { immediate })` | Move the camera toward `{ position, lookAt }`, or jump there with `immediate: true`. |
+| `screenToGround(ndcX, ndcY, { pose, out })` | Find where a screen point meets the grid, in grid-local coordinates. Returns `null` if it misses. |
+| `invalidate()` | Redraw the still frame when motion is reduced. Does nothing while animating. |
+| `resize()` | Re-measure the canvas. A `ResizeObserver` already does this. |
+| `destroy()` | Stop the loop, remove listeners and plugins, and free GPU resources. |
+
+## Properties
+
+| Property | |
+|---|---|
+| `cols`, `rows`, `cellSize` | The grid's size. |
+| `centers` | `Float32Array` of tile centres, `[x0, y0, x1, y1, …]`. |
+| `heights` | `Float32Array` of each tile's height this frame. |
+| `glow` | `Float32Array` of each tile's glow, 0–1, written by overlays. |
+| `colors` | `{ base, hover }` as three.js `Color`s. |
+| `settings` | The current options. |
+| `isRunning` | Whether the animation loop is running. It stops off-screen, in hidden tabs and when motion is reduced. |
+| `motionAllowed` | Whether motion is allowed right now. |
+| `renderer`, `scene`, `camera`, `group`, `canvas` | The underlying three.js objects and canvas. |
+
+## Exports
+
+| Export | |
+|---|---|
+| `SpacetimeGrid` | The class. |
+| `scrollCamera`, `elementWell` | Built-in plugins. |
+| `SPACETIME_GRID_SCHEMA` | Every option as data: key, label, group, type, default, range, description and whether it's live. |
+| `DEFAULT_SETTINGS`, `DEFAULT_THEME`, `DEFAULT_CAMERA_POSE` | Defaults. |
+| Types | `SpacetimeGridOptions`, `SpacetimeGridLiveOptions`, `SpacetimeGridSettings`, `SpacetimeGridTheme`, `GridPlugin`, `GridFrame`, `CameraPose`, `WellOptions`, `OptionSchema` and more. |

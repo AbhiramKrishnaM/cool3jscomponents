@@ -1,0 +1,47 @@
+---
+title: Web Component
+description: Use the contribution skyline and calendar as custom elements.
+sidebar:
+  order: 3
+---
+
+```ts
+import {
+  defineContributionSkylineElement,
+  defineContributionCalendarElement,
+} from "@abhiramkrishna/contribution-skyline/element";
+
+defineContributionSkylineElement();
+defineContributionCalendarElement();
+```
+
+```html
+<contribution-skyline
+  src="/api/contributions?user=you"
+  bar-scale="1.2"
+  theme-hover="#5ee6ff"
+  theme-fog="#011627"
+  style="height: 320px"
+></contribution-skyline>
+
+<contribution-calendar src="/data/contributions.json" link="false"></contribution-calendar>
+```
+
+Nothing is registered until you call the `define…` functions. Each takes an optional tag name.
+
+## Data
+
+- **`src`:** fetches the JSON from a static file or the [serverless handler](/contribution-skyline/data/#from-a-serverless-function). Changing `src` cancels any fetch still in progress.
+- **`data` property:** set the JSON directly instead (`el.data = json`).
+
+**Events:** `load` fires with the data and `error` with the failure. On the skyline, `ready` fires with the instance.
+
+## `<contribution-skyline>`
+
+- **Options:** every [option](/contribution-skyline/options/) is a kebab-case attribute, such as `bar-scale`, `bursts="false"` or `reduced-motion-progress`. Changes apply live.
+- **Theme colours:** `theme-base`, `theme-hover`, `theme-fog` and `theme-fresnel`.
+- **Properties:** `progress` takes a number or a function, and `grid` takes floor grid options (setting it rebuilds the scene). `skyline` is the instance.
+
+## `<contribution-calendar>`
+
+Attributes: `src`, `caption="false"`, `link="false"` and `locale`. Style it with the [calendar's CSS variables](/contribution-skyline/calendar/#theming).

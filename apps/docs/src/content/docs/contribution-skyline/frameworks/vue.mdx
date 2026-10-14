@@ -1,0 +1,56 @@
+---
+title: Vue
+description: Use the contribution skyline and calendar as Vue 3 components.
+sidebar:
+  order: 1
+---
+
+```vue
+<script setup lang="ts">
+import { ContributionSkyline, ContributionCalendar } from "@abhiramkrishna/contribution-skyline/vue";
+import data from "./data/contributions.json";
+</script>
+
+<template>
+  <div class="skyline">
+    <ContributionSkyline :data="data" :bar-scale="1.2" color="#5ee6ff" @ready="(s) => s.setProgress(1)" />
+  </div>
+  <ContributionCalendar :data="data" :link="false" />
+</template>
+```
+
+Requires Vue 3.3 or later.
+
+## `ContributionSkyline` props
+
+| Prop | |
+|---|---|
+| `data` | The contributions JSON. Required. A new object keeps the same scene and swaps the data. |
+| `progress` | A number from 0 to 1, or a function read every frame. |
+| [Options](/contribution-skyline/options/) | Every option is a prop (`:bar-scale`, `:bursts`, `:reduced-motion-progress`…). They update live. |
+| `theme` | Floor and bar colours: `base`, `hover`, `fog`, `fresnel`. |
+| `grid` | [Grid options](/spacetime-grid/options/) for the floor. Changing this object rebuilds the scene. |
+
+`@ready` gives you the `ContributionSkyline` instance, and a template ref exposes it as `skyline`.
+
+## `ContributionCalendar` props
+
+`data` (required), `caption`, `link` and `locale`. It renders the calendar's HTML string, so it's safe with server rendering, and importing only this component keeps three.js out of your bundle.
+
+## As a layer
+
+Pass the layer to the grid component's `plugins` prop. Create it once, outside reactive state:
+
+```vue
+<script setup lang="ts">
+import { SpacetimeGrid } from "@abhiramkrishna/spacetime-grid/vue";
+import { contributionSkyline } from "@abhiramkrishna/contribution-skyline";
+import data from "./data/contributions.json";
+
+const plugins = [contributionSkyline(data, { progress: () => aboutProgress() })];
+</script>
+
+<template>
+  <SpacetimeGrid :plugins="plugins" />
+</template>
+```

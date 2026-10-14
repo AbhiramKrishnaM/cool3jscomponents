@@ -1,0 +1,136 @@
+---
+title: Getting started
+description: Fetch your contributions and show the skyline.
+sidebar:
+  order: 2
+---
+
+import { Aside, Steps, Tabs, TabItem } from "@astrojs/starlight/components";
+
+<Steps>
+
+1. Install the package and three.js:
+
+   <Tabs syncKey="pm">
+     <TabItem label="npm">
+       ```sh
+       npm install @abhiramkrishna/contribution-skyline three
+       ```
+     </TabItem>
+     <TabItem label="pnpm">
+       ```sh
+       pnpm add @abhiramkrishna/contribution-skyline three
+       ```
+     </TabItem>
+     <TabItem label="yarn">
+       ```sh
+       yarn add @abhiramkrishna/contribution-skyline three
+       ```
+     </TabItem>
+   </Tabs>
+
+   This also installs [`@abhiramkrishna/spacetime-grid`](/spacetime-grid/), which draws the floor.
+
+2. Fetch your contributions into a JSON file. No token is needed:
+
+   ```sh
+   npx contribution-skyline-fetch your-username --out src/data/contributions.json
+   ```
+
+   Add it as a `prebuild` script to refresh the data on every deploy. If GitHub can't be reached, it keeps the previous file. For other ways to get the data, see [Getting the data](/contribution-skyline/data/).
+
+3. Show it:
+
+   <Tabs syncKey="framework">
+     <TabItem label="JavaScript">
+       ```ts
+       import { ContributionSkyline } from "@abhiramkrishna/contribution-skyline";
+       import data from "./data/contributions.json";
+
+       new ContributionSkyline(document.querySelector(".skyline")!, data);
+       ```
+     </TabItem>
+     <TabItem label="Vue">
+       ```vue
+       <script setup lang="ts">
+       import { ContributionSkyline } from "@abhiramkrishna/contribution-skyline/vue";
+       import data from "./data/contributions.json";
+       </script>
+
+       <template>
+         <div class="skyline"><ContributionSkyline :data="data" /></div>
+       </template>
+       ```
+     </TabItem>
+     <TabItem label="React">
+       ```tsx
+       import { ContributionSkyline } from "@abhiramkrishna/contribution-skyline/react";
+       import data from "./data/contributions.json";
+
+       export function Skyline() {
+         return <div className="skyline"><ContributionSkyline data={data} /></div>;
+       }
+       ```
+     </TabItem>
+     <TabItem label="Web Component">
+       ```ts
+       import { defineContributionSkylineElement } from "@abhiramkrishna/contribution-skyline/element";
+
+       defineContributionSkylineElement();
+       ```
+
+       ```html
+       <contribution-skyline class="skyline" src="/data/contributions.json"></contribution-skyline>
+       ```
+     </TabItem>
+   </Tabs>
+
+4. Give the container a size. A year is about seven times wider than it is deep, so wide and short works best:
+
+   ```css
+   .skyline {
+     height: 320px;
+   }
+   ```
+
+</Steps>
+
+<Aside type="tip">
+  On phones, the bars get small. Show the [2D calendar](/contribution-skyline/calendar/) there instead. It's plain HTML and doesn't load three.js.
+</Aside>
+
+## The standalone scene
+
+`ContributionSkyline` creates a small spacetime grid, sized to the data, with its waves turned off.
+- **Camera:** it fits the whole year to the container and refits on resize.
+- **Interaction:** the floor keeps the cursor gravity well and click ripples.
+- **Fog:** set `theme.fog` to your background colour, as with the grid.
+
+```ts
+const skyline = new ContributionSkyline(el, data, {
+  barScale: 1.2,
+  theme: { hover: "#5ee6ff", fog: "#011627" },
+});
+
+skyline.setProgress(0.5);
+skyline.setOptions({ bursts: false, floor: false });
+skyline.setTheme({ hover: "#c58cff" });
+skyline.setData(newData);
+skyline.destroy();
+```
+
+| Member | |
+|---|---|
+| `setProgress(progress)` | How far the bars have risen, from 0 to 1, or a function that's read every frame. |
+| `setOptions(options)` | Change any [option](/contribution-skyline/options/), including `theme`. |
+| `setTheme(theme)` | Change the floor and bar colours. |
+| `setData(data)` | Show new data in the same scene. |
+| `settings` | The current options. |
+| `grid`, `layer` | The underlying `SpacetimeGrid` and `SkylineLayer`. |
+| `destroy()` | Stop everything and free the GPU resources. |
+
+To change the floor's own grid options, such as `cellSize` or `wellRadius`, pass `{ grid: { … } }` to the constructor.
+
+## Reduced motion
+
+Visitors with `prefers-reduced-motion: reduce` see a still frame with no twinkle, bursts or cursor effects. The bars show at `reducedMotionProgress` (default `1`, fully risen) instead of `progress`. A scroll-driven rise can't play in a still frame, so they would otherwise never see the bars.

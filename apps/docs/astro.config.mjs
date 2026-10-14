@@ -27,8 +27,30 @@ export default defineConfig({
         { icon: "github", label: "GitHub", href: "https://github.com/AbhiramKrishnaM" },
       ],
       sidebar: [
-        { label: "Spacetime grid", items: [{ autogenerate: { directory: "spacetime-grid" } }] },
-        { label: "Contribution skyline", items: [{ autogenerate: { directory: "contribution-skyline" } }] },
+        {
+          label: "Spacetime grid",
+          items: [
+            "spacetime-grid",
+            "spacetime-grid/getting-started",
+            "spacetime-grid/options",
+            "spacetime-grid/plugins",
+            "spacetime-grid/api",
+            { label: "Frameworks", items: [{ autogenerate: { directory: "spacetime-grid/frameworks" } }] },
+          ],
+        },
+        {
+          label: "Contribution skyline",
+          items: [
+            "contribution-skyline",
+            "contribution-skyline/getting-started",
+            "contribution-skyline/data",
+            "contribution-skyline/layer",
+            "contribution-skyline/calendar",
+            "contribution-skyline/options",
+            "contribution-skyline/api",
+            { label: "Frameworks", items: [{ autogenerate: { directory: "contribution-skyline/frameworks" } }] },
+          ],
+        },
       ],
     }),
   ],

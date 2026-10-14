@@ -1,0 +1,102 @@
+---
+title: 2D calendar
+description: A flat, dependency-free contribution calendar for phones and server-rendered pages.
+sidebar:
+  order: 5
+---
+
+import { Tabs, TabItem } from "@astrojs/starlight/components";
+
+The calendar is the lightweight option: plain HTML styled with CSS variables, with no three.js and no dependencies. It's what abhiramkrishna.com shows on phones.
+
+![A flat contribution calendar](../../../assets/skyline/calendar.png)
+
+<Tabs syncKey="framework">
+  <TabItem label="JavaScript">
+    ```ts
+    import { renderContributionCalendar } from "@abhiramkrishna/contribution-skyline/calendar";
+
+    const calendar = renderContributionCalendar(document.querySelector(".calendar")!, data);
+    calendar.update(newData);
+    calendar.destroy();
+    ```
+  </TabItem>
+  <TabItem label="Vue">
+    ```vue
+    <script setup lang="ts">
+    import { ContributionCalendar } from "@abhiramkrishna/contribution-skyline/vue";
+    </script>
+
+    <template>
+      <ContributionCalendar :data="data" :link="false" />
+    </template>
+    ```
+  </TabItem>
+  <TabItem label="React">
+    ```tsx
+    import { ContributionCalendar } from "@abhiramkrishna/contribution-skyline/react";
+
+    <ContributionCalendar data={data} caption={false} />;
+    ```
+  </TabItem>
+  <TabItem label="Web Component">
+    ```ts
+    import { defineContributionCalendarElement } from "@abhiramkrishna/contribution-skyline/element";
+
+    defineContributionCalendarElement();
+    ```
+
+    ```html
+    <contribution-calendar src="/data/contributions.json"></contribution-calendar>
+    ```
+  </TabItem>
+</Tabs>
+
+**Options:**
+- `caption` (default `true`): the "442 contributions in the last year" line.
+- `link` (default `true`): the `@username ↗` link.
+- `locale` (default `"en-US"`): number formatting.
+
+## Rendering on the server
+
+`contributionCalendarHTML` returns the markup as a string, so the calendar can be rendered on the server and needs no JavaScript in the browser:
+
+```astro
+---
+import { contributionCalendarHTML } from "@abhiramkrishna/contribution-skyline/calendar";
+import data from "../data/contributions.json";
+---
+
+<Fragment set:html={contributionCalendarHTML(data)} />
+```
+
+The Vue and React components render the same string, so they work with server rendering too.
+
+## Theming
+
+Set any of these CSS variables on the calendar or a parent:
+
+| Variable | Default | |
+|---|---|---|
+| `--cs-accent` | `#43d9ad` | Base colour. Levels 1–4 use it at 35 / 55 / 80 / 100 %. |
+| `--cs-level-1` … `--cs-level-4` | from `--cs-accent` | Override a single level. |
+| `--cs-empty` | `#1e2d3d` | Days with no contributions. |
+| `--cs-cell-size` | `0.6rem` | Size of each day. |
+| `--cs-gap` | `2px` | Space between days. |
+| `--cs-radius` | `2px` | Corner radius. `50%` gives round dots. |
+| `--cs-text`, `--cs-strong`, `--cs-link` | `#7890aa`, `#e5e9f0`, inherit | Caption colours. |
+
+```css
+.calendar {
+  --cs-accent: #097a5d;
+  --cs-empty: #d7e0e7;
+  --cs-text: #52697d;
+  --cs-strong: #011627;
+}
+```
+
+## Accessibility
+
+- **Screen readers:** the grid has `role="img"` and a label such as "442 GitHub contributions in the last year".
+- **Hover titles:** each day has one, such as "3 contributions on 2026-01-07".
+- **Narrow screens:** the grid scrolls sideways inside itself instead of widening the page.

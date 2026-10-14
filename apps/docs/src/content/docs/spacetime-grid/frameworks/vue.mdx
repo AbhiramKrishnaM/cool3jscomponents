@@ -1,0 +1,77 @@
+---
+title: Vue
+description: Use the spacetime grid as a Vue 3 component.
+sidebar:
+  order: 1
+---
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+import { SpacetimeGrid } from "@abhiramkrishna/spacetime-grid/vue";
+import type { SpacetimeGrid as Grid } from "@abhiramkrishna/spacetime-grid";
+
+const hover = ref("#43d9ad");
+
+function onReady(grid: Grid) {
+  grid.ripple(innerWidth / 2, innerHeight / 2);
+}
+</script>
+
+<template>
+  <div class="background">
+    <SpacetimeGrid :wave-amplitude="0.12" :theme="{ hover, fog: '#011627' }" @ready="onReady" />
+  </div>
+</template>
+```
+
+Requires Vue 3.3 or later.
+
+## Props
+
+- **Options:** every [option](/spacetime-grid/options/) is a prop, written camelCase or kebab-case (`:wave-amplitude` or `:waveAmplitude`). Leave a prop out to use its default.
+- **`theme`:** any of `base`, `hover`, `fog` and `fresnel`.
+- **`plugins`:** an array of [plugins](/spacetime-grid/plugins/). When the array changes, the plugins are removed and added again.
+
+**Updates:**
+- Live props update the grid in place, and a prop you remove goes back to its default.
+- Changing `cols`, `rows`, `cellSize` or `fill` creates a new grid. Plugins move across to it, and `ready` fires again.
+
+## Getting the instance
+
+`@ready` gives you the `SpacetimeGrid` instance. A template ref exposes it as `grid`:
+
+```vue
+<script setup lang="ts">
+import { ref, onMounted } from "vue";
+import { SpacetimeGrid } from "@abhiramkrishna/spacetime-grid/vue";
+
+const background = ref<InstanceType<typeof SpacetimeGrid>>();
+onMounted(() => background.value?.grid?.setTheme({ hover: "#ff9e7a" }));
+</script>
+
+<template>
+  <SpacetimeGrid ref="background" />
+</template>
+```
+
+## Plugins
+
+```vue
+<script setup lang="ts">
+import { SpacetimeGrid } from "@abhiramkrishna/spacetime-grid/vue";
+import { elementWell } from "@abhiramkrishna/spacetime-grid";
+
+const plugins = [elementWell(() => document.querySelector(".dialog"), { radius: 3 })];
+</script>
+
+<template>
+  <SpacetimeGrid :plugins="plugins" />
+</template>
+```
+
+Define the array once, outside reactive state, so it isn't re-created on every render.
+
+## Nuxt and server rendering
+
+The component renders an empty `<div>` on the server and creates the grid when it mounts, so it's safe to render on the server. The three.js code still ends up in your bundle; to load it later, wrap the component in `<ClientOnly>` or use `defineAsyncComponent`.

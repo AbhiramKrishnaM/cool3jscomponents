@@ -36,7 +36,7 @@ See `PLAN.md` for the full plan.
 - [x] README with usage + screenshots
 
 ## 4. Docs site
-- [ ] Per package: overview, install, quick start, Vue / React / Web Component guides
+- [x] Per package: overview, install, quick start, Vue / React / Web Component guides
 - [x] Props/options reference tables (type, default, description)
 - [ ] Live playground per component: controls that change props in real time + a copy-paste snippet that updates with them
 - [ ] Recipes: theming, performance tuning, reduced motion, grid + skyline together

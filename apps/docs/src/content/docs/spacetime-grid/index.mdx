@@ -1,0 +1,37 @@
+---
+title: Spacetime grid
+description: An animated three.js grid with idle waves, a cursor gravity well and click ripples.
+sidebar:
+  label: Overview
+  order: 1
+---
+
+import { Card, CardGrid, LinkCard } from "@astrojs/starlight/components";
+
+`@abhiramkrishna/spacetime-grid` is the animated background from [abhiramkrishna.com](https://www.abhiramkrishna.com). It's a field of tiles: idle waves roll across it, the tiles under your cursor sink into a gravity well, and a click sends an energy ring across the surface.
+
+![Tiles sinking into a gravity well under the cursor](../../../assets/grid/well.png)
+
+<CardGrid>
+  <Card title="Cursor gravity well" icon="random">
+    Tiles sink and light up under the mouse, then ease back when it moves on.
+  </Card>
+  <Card title="Click ripples" icon="rocket">
+    Each click or tap sends a ring outward. You can also start one from code with `grid.ripple()`.
+  </Card>
+  <Card title="Plugins" icon="puzzle">
+    Camera moves driven by scroll, wells that follow elements, and data overlays such as the contribution skyline.
+  </Card>
+  <Card title="Built to stay out of the way" icon="approve-check">
+    About 0.3 ms of CPU per frame, paused when off-screen or in a hidden tab, and a still frame for reduced motion.
+  </Card>
+</CardGrid>
+
+| Idle waves | Click ripple | Custom theme |
+|---|---|---|
+| ![The idle grid](../../../assets/grid/idle.png) | ![An energy ring spreading from a click](../../../assets/grid/ripple.png) | ![The grid in a violet dusk palette](../../../assets/grid/dusk.png) |
+
+It's written in plain TypeScript on three.js, with thin wrappers for Vue, React and Web Components.
+
+<LinkCard title="Getting started" description="Install it and put a grid behind your page." href="/spacetime-grid/getting-started/" />
+<LinkCard title="Options" description="All 28 options, with defaults and ranges." href="/spacetime-grid/options/" />

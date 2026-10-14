@@ -1,0 +1,116 @@
+---
+title: Getting the data
+description: Fetch GitHub contributions at build time, from a serverless function, or on a server, with or without a token.
+sidebar:
+  order: 3
+---
+
+import { Aside, Tabs, TabItem } from "@astrojs/starlight/components";
+
+Every component takes the same JSON:
+
+```ts
+interface ContributionData {
+  user: string;
+  total: number;
+  fetchedAt: string | null;
+  days: { date: string; level: 0 | 1 | 2 | 3 | 4; count: number }[];
+}
+```
+
+`days` runs oldest to newest, starting on a Sunday: 53 weeks × 7 days for a full year. `level` is GitHub's own 0–4 shading.
+
+<Aside type="caution" title="Server only">
+  GitHub's contributions page has no CORS headers, so browsers can't fetch it directly. Every helper here runs at build time, in a serverless function or on a server, and the components only receive the JSON.
+</Aside>
+
+## At build time
+
+The simplest option for a static site: fetch once per deploy and import the file.
+
+```sh
+npx contribution-skyline-fetch your-username --out src/data/contributions.json
+```
+
+```json title="package.json"
+{
+  "scripts": {
+    "prebuild": "contribution-skyline-fetch your-username --out src/data/contributions.json"
+  }
+}
+```
+
+If the fetch fails, the CLI keeps the existing file and prints a warning. If there's no file yet, it writes an empty one so your build still works.
+
+## From a serverless function
+
+`createContributionsHandler` returns a standard `Request → Response` handler:
+
+<Tabs>
+  <TabItem label="Vercel / Next.js">
+    ```ts title="app/api/contributions/route.ts"
+    import { createContributionsHandler } from "@abhiramkrishna/contribution-skyline/fetch";
+
+    export const GET = createContributionsHandler({ cacheSeconds: 3600 });
+    ```
+  </TabItem>
+  <TabItem label="Netlify">
+    ```ts title="netlify/functions/contributions.ts"
+    import { createContributionsHandler } from "@abhiramkrishna/contribution-skyline/fetch";
+
+    export default createContributionsHandler({ cacheSeconds: 3600 });
+    ```
+  </TabItem>
+  <TabItem label="Cloudflare Workers">
+    ```ts title="src/index.ts"
+    import { createContributionsHandler } from "@abhiramkrishna/contribution-skyline/fetch";
+
+    const handler = createContributionsHandler({ cacheSeconds: 3600 });
+    export default { fetch: handler };
+    ```
+  </TabItem>
+</Tabs>
+
+- **Request:** `?user=` picks the account.
+- **Responses:** the JSON with cache headers (`max-age`, `s-maxage` and `stale-while-revalidate`). A bad username gets 400, an unknown user 404, and a GitHub failure 502.
+- **One account only:** pass `user: "you"` so the endpoint can't be used to look up other people.
+
+The Web Components can load from it directly:
+
+```html
+<contribution-skyline src="/api/contributions?user=you"></contribution-skyline>
+```
+
+## On a server
+
+```ts
+import { fetchContributions } from "@abhiramkrishna/contribution-skyline/fetch";
+
+const data = await fetchContributions("your-username");
+```
+
+It accepts an `AbortSignal` (`{ signal }`) and a custom `fetch` (`{ fetch }`), and throws an error with a readable message on failure.
+
+## Private contributions
+
+Without a token you get the same calendar anyone sees on your GitHub profile. There are two ways to include private work:
+
+- **Profile setting, no token:** turn on **Include private contributions on my profile** in your GitHub settings. Private work then appears as anonymous counts on your public calendar, and the token-free fetch reads it.
+- **Token from your own account:** with a token, the helpers use GitHub's GraphQL API, which returns the calendar as GitHub shows it to that account.
+
+```ts
+await fetchContributions("your-username", { token: process.env.GITHUB_TOKEN });
+createContributionsHandler({ user: "your-username", token: process.env.GITHUB_TOKEN });
+```
+
+For the CLI, set the token in `CONTRIBUTIONS_TOKEN`:
+
+```sh
+CONTRIBUTIONS_TOKEN=ghp_… npx contribution-skyline-fetch your-username
+```
+
+What's included depends on GitHub's rules for your account, so compare the result with your profile once.
+
+<Aside type="danger" title="Never put a token in browser code">
+  `fetchContributions` throws an error if it's given a token in a browser. Keep tokens in environment variables on the server or in your CI.
+</Aside>

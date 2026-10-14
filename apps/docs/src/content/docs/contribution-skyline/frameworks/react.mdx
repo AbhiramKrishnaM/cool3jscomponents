@@ -1,0 +1,56 @@
+---
+title: React
+description: Use the contribution skyline and calendar as React components.
+sidebar:
+  order: 2
+---
+
+```tsx
+import { useRef } from "react";
+import { ContributionSkyline, ContributionCalendar } from "@abhiramkrishna/contribution-skyline/react";
+import type { ContributionSkyline as Skyline } from "@abhiramkrishna/contribution-skyline";
+import data from "./data/contributions.json";
+
+export function Contributions() {
+  const skyline = useRef<Skyline>(null);
+  return (
+    <>
+      <div className="skyline">
+        <ContributionSkyline ref={skyline} data={data} barScale={1.2} color="#5ee6ff" />
+      </div>
+      <ContributionCalendar data={data} caption={false} />
+    </>
+  );
+}
+```
+
+Requires React 18 or later. It works in StrictMode.
+
+## `ContributionSkyline` props
+
+| Prop | |
+|---|---|
+| `data` | The contributions JSON. Required. A new object keeps the same scene and swaps the data. |
+| `progress` | A number from 0 to 1, or a function read every frame. |
+| [Options](/contribution-skyline/options/) | Every option is a prop. They update live. |
+| `theme` | Floor and bar colours. |
+| `grid` | [Grid options](/spacetime-grid/options/) for the floor. Changing this object rebuilds the scene. |
+| `onReady`, `className`, `style` | Called with the instance; set on the wrapping `<div>`. |
+
+## `ContributionCalendar` props
+
+`data` (required), `caption`, `link`, `locale` and `className`. It renders with `dangerouslySetInnerHTML` from the escaped HTML string, so it works in server components and keeps three.js out of the bundle if it's the only one you import.
+
+## As a layer
+
+```tsx
+import { useMemo } from "react";
+import { SpacetimeGrid } from "@abhiramkrishna/spacetime-grid/react";
+import { contributionSkyline } from "@abhiramkrishna/contribution-skyline";
+
+const plugins = useMemo(() => [contributionSkyline(data, { progress: () => aboutProgress() })], [data]);
+
+<SpacetimeGrid plugins={plugins} />;
+```
+
+Keep the array stable with `useMemo`, because a new array re-adds the layer.
