@@ -61,7 +61,9 @@ All in `Portfolio/src/components/background/SpaceTimeGrid.vue` (~740 lines, Vue 
 
 Decided: monorepo (`packages/spacetime-grid`, `packages/contribution-skyline`, `apps/docs`), tsup builds (ESM + types), `three` as a peer dependency, Changesets for releases, Astro + Starlight docs deployed on Vercel at `docs.abhiramkrishna.com`, framework-agnostic core with Vue / React / Web Component wrappers, and a `/sandbox` page in the docs whose controls and props tables are both generated from an options schema each package exports.
 
-Open (see `TODO.md` §0): the project name (deferred — `threejscomponents` is a working name), pnpm vs npm workspaces, plain vs scoped (`@abhiramkrishna/…`) package names, licence (MIT suggested). Ask the user — don't pick silently.
+Also decided: pnpm workspaces, scoped package names (`@abhiramkrishna/spacetime-grid`, `@abhiramkrishna/contribution-skyline`), MIT licence.
+
+Open: the project name (deferred — `threejscomponents` is a working name). Ask the user — don't pick silently.
 
 ## Working style
 

@@ -4,9 +4,9 @@ See `PLAN.md` for the full plan.
 
 ## 0. Decisions (before anything is created)
 - [ ] Project name — deferred (shortlist: Gravita, Starfold, Warp, Nebulo, Tessera, Orrery)
-- [ ] pnpm or npm workspaces (pnpm suggested)
-- [ ] Package names: plain or scoped `@abhiramkrishna/…` (scoped suggested) — check availability on npm
-- [ ] Licence (MIT suggested)
+- [x] pnpm workspaces
+- [x] Package names: scoped `@abhiramkrishna/spacetime-grid`, `@abhiramkrishna/contribution-skyline` — check availability on npm before publishing
+- [x] Licence: MIT
 - [ ] **[Abhiram]** `git init` + create the GitHub repo
 
 ## 1. Scaffold the monorepo

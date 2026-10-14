@@ -122,7 +122,7 @@ threejscomponents/
 
 ## Tooling
 
-- **Workspaces:** pnpm (suggested) or npm — *decision pending*
+- **Workspaces:** pnpm
 - **Build:** tsup → ESM + `.d.ts` types per package
 - **three.js:** peer dependency (users bring their own version); wrappers' frameworks are optional peers
 - **Releases:** Changesets for version bumps, changelogs and `npm publish`
@@ -132,9 +132,9 @@ threejscomponents/
 ## Open decisions
 
 1. **Project name** — deferred; pick later (shortlist so far: Gravita, Starfold, Warp, Nebulo, Tessera, Orrery). `threejscomponents` is a working name only.
-2. **pnpm or npm workspaces?** (pnpm suggested)
-3. **Package names:** plain (`spacetime-grid`, `contribution-skyline`) or scoped (`@abhiramkrishna/spacetime-grid`, `@abhiramkrishna/contribution-skyline`)? Scoped suggested — no name clashes, groups your packages. Check availability on npm either way.
-4. **Licence:** MIT suggested. Both packages are original code (the Codrops cardboard box and the CC-BY keyboard model stay in the portfolio and are **not** part of these packages).
+2. ~~pnpm or npm workspaces?~~ **Decided: pnpm.**
+3. ~~Package names?~~ **Decided: scoped** — `@abhiramkrishna/spacetime-grid`, `@abhiramkrishna/contribution-skyline`. Check availability on npm before publishing.
+4. ~~Licence?~~ **Decided: MIT.** Both packages are original code (the Codrops cardboard box and the CC-BY keyboard model stay in the portfolio and are **not** part of these packages).
 
 ## Build order
 
