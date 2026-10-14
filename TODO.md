@@ -17,8 +17,8 @@ See `PLAN.md` for the full plan.
 - [x] `apps/docs` — Astro + Starlight shell, styled like the portfolio (Fira Code, `DESIGN.md` tokens)
 
 ## 2. spacetime-grid
-- [ ] Port the grid core from `Portfolio/src/components/background/SpaceTimeGrid.vue` (no Vue, no portfolio scroll code)
-- [ ] Core effects: idle waves, cursor gravity well, click ripples, fog, theme colours
+- [x] Port the grid core from `Portfolio/src/components/background/SpaceTimeGrid.vue` (no Vue, no portfolio scroll code)
+- [x] Core effects: idle waves, cursor gravity well, click ripples, fog, theme colours
 - [ ] Keep the per-tile tick allocation-free and trig-free (precomputed sin/cos); pause off-screen / when the tab is hidden
 - [ ] Plugin/hook API: camera poses per section, extra wells that follow an element, impulses, data overlays
 - [ ] Options: size/density, colours/theme, wave strength, well radius/depth, ripple speed/lifetime, fog, pixel-ratio cap, reduced motion
