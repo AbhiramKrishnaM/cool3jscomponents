@@ -32,7 +32,7 @@ See `PLAN.md` for the full plan.
 - [x] Fetch helper for server / serverless / build time (username → JSON; optional token for private contributions, never in the browser) — based on `Portfolio/scripts/fetch-contributions.mjs`
 - [x] Flat 2D calendar component as the lightweight option
 - [x] Options: colours/theme, bar height scale, twinkle on/off, bursts on/off + frequency, reduced motion
-- [ ] Wrappers: Vue, React, Web Component
+- [x] Wrappers: Vue, React, Web Component
 - [ ] README with usage + screenshots
 
 ## 4. Docs site
