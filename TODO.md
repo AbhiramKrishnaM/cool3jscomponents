@@ -13,7 +13,7 @@ See `PLAN.md` for the full plan.
 - [x] Workspace root `package.json`, shared ESLint/TS config
 - [x] `packages/spacetime-grid` and `packages/contribution-skyline` skeletons with tsup builds (ESM + types)
 - [x] `three` as a peer dependency
-- [ ] Changesets set up for versioning + publishing
+- [x] Changesets set up for versioning + publishing
 - [ ] `apps/docs` — Astro + Starlight shell, styled like the portfolio (Fira Code, `DESIGN.md` tokens)
 
 ## 2. spacetime-grid
