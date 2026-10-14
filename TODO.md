@@ -14,7 +14,7 @@ See `PLAN.md` for the full plan.
 - [x] `packages/spacetime-grid` and `packages/contribution-skyline` skeletons with tsup builds (ESM + types)
 - [x] `three` as a peer dependency
 - [x] Changesets set up for versioning + publishing
-- [ ] `apps/docs` — Astro + Starlight shell, styled like the portfolio (Fira Code, `DESIGN.md` tokens)
+- [x] `apps/docs` — Astro + Starlight shell, styled like the portfolio (Fira Code, `DESIGN.md` tokens)
 
 ## 2. spacetime-grid
 - [ ] Port the grid core from `Portfolio/src/components/background/SpaceTimeGrid.vue` (no Vue, no portfolio scroll code)
