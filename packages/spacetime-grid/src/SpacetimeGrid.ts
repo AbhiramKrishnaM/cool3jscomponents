@@ -8,6 +8,7 @@ import {
   PerspectiveCamera,
   Plane,
   PlaneGeometry,
+  Quaternion,
   Raycaster,
   Scene,
   ShaderMaterial,
@@ -16,7 +17,6 @@ import {
   Vector2,
   Vector3,
   WebGLRenderer,
-  type ColorRepresentation,
 } from "three";
 import {
   CAMERA_EASE,
@@ -27,7 +27,11 @@ import {
   FILL,
   FOG_FAR,
   FOG_NEAR,
+  GLOW_BRIGHTEN,
+  GLOW_LIFT,
   LAYOUT,
+  MAX_EXTRA_WELLS,
+  MAX_FRAME_DT,
   MAX_PIXEL_RATIO,
   MAX_RIPPLES,
   RIPPLE_HEIGHT,
@@ -41,18 +45,16 @@ import {
   WELL_RADIUS,
 } from "./constants";
 import { gridFrag, gridVert } from "./shaders";
+import type {
+  CameraPose,
+  GridColors,
+  GridFrame,
+  GridPlugin,
+  SpacetimeGridOptions,
+  SpacetimeGridTheme,
+  WellOptions,
+} from "./types";
 import { createWaveField, prepareWaveFrame, waveHeightAt, type WaveField } from "./waves";
-
-export interface SpacetimeGridTheme {
-  base: ColorRepresentation;
-  hover: ColorRepresentation;
-  fog: ColorRepresentation;
-  fresnel: ColorRepresentation;
-}
-
-export interface SpacetimeGridOptions {
-  theme?: Partial<SpacetimeGridTheme>;
-}
 
 export const DEFAULT_THEME: SpacetimeGridTheme = {
   base: "#0c1f33",
@@ -61,13 +63,23 @@ export const DEFAULT_THEME: SpacetimeGridTheme = {
   fresnel: "#bfe9ff",
 };
 
+export const DEFAULT_CAMERA_POSE: CameraPose = {
+  position: CAMERA_POSE.pos,
+  lookAt: CAMERA_POSE.look,
+};
+
 interface GridUniforms {
   [name: string]: { value: unknown };
   uFresnelColor: { value: Color };
   uOpacity: { value: number };
 }
 
-const WELL_RADIUS_SQ = WELL_RADIUS * WELL_RADIUS;
+interface PluginEntry {
+  plugin: GridPlugin;
+  teardown: (() => void) | null;
+}
+
+const MAX_WELLS = MAX_EXTRA_WELLS + 1;
 
 export class SpacetimeGrid {
   readonly canvas: HTMLCanvasElement;
@@ -80,6 +92,9 @@ export class SpacetimeGrid {
   readonly cellSize = CELL;
   readonly centers: Float32Array;
   readonly heights: Float32Array;
+  readonly glow: Float32Array;
+  readonly colors: GridColors;
+  readonly motionAllowed: boolean;
 
   private readonly mesh: InstancedMesh<PlaneGeometry, ShaderMaterial>;
   private readonly uniforms: GridUniforms;
@@ -89,11 +104,25 @@ export class SpacetimeGrid {
   private readonly hoverColor = new Color();
   private readonly well: Float32Array;
   private readonly waves: WaveField;
+  private readonly plugins: PluginEntry[] = [];
+  private readonly frame: GridFrame = { t: 0, dt: 0, motion: false };
+  private lastT = 0;
+
   private readonly rippleX = new Float32Array(MAX_RIPPLES);
   private readonly rippleY = new Float32Array(MAX_RIPPLES);
   private readonly rippleStart = new Float32Array(MAX_RIPPLES);
   private readonly rippleStrength = new Float32Array(MAX_RIPPLES);
   private rippleCount = 0;
+
+  private readonly wellClientX = new Float32Array(MAX_EXTRA_WELLS);
+  private readonly wellClientY = new Float32Array(MAX_EXTRA_WELLS);
+  private readonly wellRadius = new Float32Array(MAX_EXTRA_WELLS);
+  private readonly wellDepth = new Float32Array(MAX_EXTRA_WELLS);
+  private extraWellCount = 0;
+  private readonly activeX = new Float32Array(MAX_WELLS);
+  private readonly activeY = new Float32Array(MAX_WELLS);
+  private readonly activeRadiusSq = new Float32Array(MAX_WELLS);
+  private readonly activeDepth = new Float32Array(MAX_WELLS);
 
   private readonly raycaster = new Raycaster();
   private readonly groundPlane = new Plane();
@@ -104,12 +133,13 @@ export class SpacetimeGrid {
   private readonly cameraLook = new Vector3();
   private readonly targetPos = new Vector3();
   private readonly targetLook = new Vector3();
+  private readonly savedPos = new Vector3();
+  private readonly savedQuat = new Quaternion();
 
   private readonly ownsCanvas: boolean;
   private readonly sizeTarget: HTMLElement;
   private readonly resizeObserver: ResizeObserver;
   private readonly visibilityObserver: IntersectionObserver;
-  private readonly motionAllowed: boolean;
   private readonly finePointer: boolean;
   private pointerActive = false;
   private pointerX = 0;
@@ -124,6 +154,7 @@ export class SpacetimeGrid {
 
   constructor(target: HTMLElement, options: SpacetimeGridOptions = {}) {
     this.theme = { ...DEFAULT_THEME, ...options.theme };
+    this.colors = { base: this.baseColor, hover: this.hoverColor };
     this.motionAllowed = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     this.finePointer = window.matchMedia("(pointer: fine)").matches;
 
@@ -151,12 +182,7 @@ export class SpacetimeGrid {
     this.scene.fog = this.fog;
 
     this.camera = new PerspectiveCamera(50, width / height, 0.1, 100);
-    this.cameraPos.fromArray(CAMERA_POSE.pos);
-    this.cameraLook.fromArray(CAMERA_POSE.look);
-    this.targetPos.copy(this.cameraPos);
-    this.targetLook.copy(this.cameraLook);
-    this.camera.position.copy(this.cameraPos);
-    this.camera.lookAt(this.cameraLook);
+    this.setCameraTarget(DEFAULT_CAMERA_POSE, { immediate: true });
 
     this.group = new Group();
     this.group.rotation.x = -Math.PI * 0.42;
@@ -165,6 +191,7 @@ export class SpacetimeGrid {
     const count = COLS * ROWS;
     this.centers = new Float32Array(count * 2);
     this.heights = new Float32Array(count);
+    this.glow = new Float32Array(count);
     this.well = new Float32Array(count);
     this.fillCenters();
     this.waves = createWaveField(this.centers, count);
@@ -192,17 +219,44 @@ export class SpacetimeGrid {
     this.startTime = performance.now();
     this.pausedAt = this.startTime;
     if (this.motionAllowed) this.updateRunning();
-    else this.renderFrame(0);
+    else this.renderStill();
   }
 
   get isRunning(): boolean {
     return this.running;
   }
 
+  use(plugin: GridPlugin): () => void {
+    const entry: PluginEntry = { plugin, teardown: null };
+    this.plugins.push(entry);
+    entry.teardown = plugin.setup?.(this) ?? null;
+    plugin.themeChanged?.(this.colors);
+    this.renderStill();
+    return () => this.removePlugin(entry);
+  }
+
   setTheme(theme: Partial<SpacetimeGridTheme>): void {
     Object.assign(this.theme, theme);
     this.applyTheme();
-    if (!this.motionAllowed) this.renderFrame(0);
+    for (let i = 0; i < this.plugins.length; i++) this.plugins[i].plugin.themeChanged?.(this.colors);
+    this.renderStill();
+  }
+
+  setCameraTarget(pose: CameraPose, options: { immediate?: boolean } = {}): void {
+    this.targetPos.fromArray(pose.position);
+    this.targetLook.fromArray(pose.lookAt);
+    if (options.immediate) this.snapCamera();
+  }
+
+  addWell(clientX: number, clientY: number, options: WellOptions = {}): void {
+    if (!this.motionAllowed || this.extraWellCount >= MAX_EXTRA_WELLS) return;
+    const strength = options.strength ?? 1;
+    if (strength <= 0) return;
+    const i = this.extraWellCount++;
+    this.wellClientX[i] = clientX;
+    this.wellClientY[i] = clientY;
+    this.wellRadius[i] = options.radius ?? WELL_RADIUS;
+    this.wellDepth[i] = (options.depth ?? WELL_DEPTH) * strength;
   }
 
   ripple(clientX: number, clientY: number, strength = 1): void {
@@ -214,6 +268,27 @@ export class SpacetimeGrid {
     }
   }
 
+  screenToGround(ndcX: number, ndcY: number, options: { pose?: CameraPose; out?: Vector3 } = {}): Vector3 | null {
+    const out = options.out ?? new Vector3();
+    const { pose } = options;
+    if (pose) {
+      this.savedPos.copy(this.camera.position);
+      this.savedQuat.copy(this.camera.quaternion);
+      this.camera.position.fromArray(pose.position);
+      this.camera.lookAt(this.groundPoint.fromArray(pose.lookAt));
+    }
+    this.camera.updateMatrixWorld();
+    this.group.updateMatrixWorld();
+    this.updateGroundPlane();
+    const hit = this.groundPointAt(ndcX, ndcY, out);
+    if (pose) {
+      this.camera.position.copy(this.savedPos);
+      this.camera.quaternion.copy(this.savedQuat);
+      this.camera.updateMatrixWorld();
+    }
+    return hit ? out : null;
+  }
+
   resize(): void {
     if (this.destroyed) return;
     const { width, height } = this.measure();
@@ -221,13 +296,17 @@ export class SpacetimeGrid {
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height, false);
     this.applyLayout(width);
-    if (!this.motionAllowed) this.renderFrame(0);
+    this.renderStill();
   }
 
   destroy(): void {
     if (this.destroyed) return;
     this.destroyed = true;
     this.stop();
+    while (this.plugins.length) {
+      const entry = this.plugins[this.plugins.length - 1];
+      this.removePlugin(entry);
+    }
     this.resizeObserver.disconnect();
     this.visibilityObserver.disconnect();
     document.removeEventListener("visibilitychange", this.updateRunning);
@@ -239,6 +318,25 @@ export class SpacetimeGrid {
     this.mesh.dispose();
     this.renderer.dispose();
     if (this.ownsCanvas) this.canvas.remove();
+  }
+
+  private removePlugin(entry: PluginEntry): void {
+    const index = this.plugins.indexOf(entry);
+    if (index === -1) return;
+    this.plugins.splice(index, 1);
+    entry.teardown?.();
+    this.renderStill();
+  }
+
+  private renderStill(): void {
+    if (!this.motionAllowed && !this.destroyed) this.renderFrame(0);
+  }
+
+  private snapCamera(): void {
+    this.cameraPos.copy(this.targetPos);
+    this.cameraLook.copy(this.targetLook);
+    this.camera.position.copy(this.cameraPos);
+    this.camera.lookAt(this.cameraLook);
   }
 
   private measure(): { width: number; height: number } {
@@ -330,6 +428,26 @@ export class SpacetimeGrid {
     return true;
   }
 
+  private resolveWells(): number {
+    let count = 0;
+    if (this.pointerActive) count = this.resolveWell(count, this.pointerX, this.pointerY, WELL_RADIUS, WELL_DEPTH);
+    for (let i = 0; i < this.extraWellCount; i++) {
+      count = this.resolveWell(count, this.wellClientX[i], this.wellClientY[i], this.wellRadius[i], this.wellDepth[i]);
+    }
+    this.extraWellCount = 0;
+    return count;
+  }
+
+  private resolveWell(count: number, clientX: number, clientY: number, radius: number, depth: number): number {
+    if (!this.clientToNdc(clientX, clientY)) return count;
+    if (!this.groundPointAt(this.ndc.x, this.ndc.y, this.groundPoint)) return count;
+    this.activeX[count] = this.groundPoint.x;
+    this.activeY[count] = this.groundPoint.y;
+    this.activeRadiusSq[count] = radius * radius;
+    this.activeDepth[count] = depth;
+    return count + 1;
+  }
+
   private spawnRipple(x: number, y: number, strength: number): void {
     if (this.rippleCount >= MAX_RIPPLES) this.dropOldestRipples(1);
     const i = this.rippleCount++;
@@ -388,30 +506,33 @@ export class SpacetimeGrid {
   };
 
   private renderFrame(t: number): void {
+    const { frame, plugins } = this;
     this.currentT = t;
+    frame.t = t;
+    frame.dt = Math.min(MAX_FRAME_DT, Math.max(0, t - this.lastT));
+    frame.motion = this.motionAllowed;
+    this.lastT = t;
+
     this.group.rotation.z = this.motionAllowed ? Math.sin(t * 0.12) * 0.03 : 0;
 
-    this.cameraPos.lerp(this.targetPos, CAMERA_EASE);
-    this.cameraLook.lerp(this.targetLook, CAMERA_EASE);
-    this.camera.position.copy(this.cameraPos);
-    this.camera.lookAt(this.cameraLook);
+    for (let p = 0; p < plugins.length; p++) plugins[p].plugin.beforeFrame?.(frame);
 
-    this.updateGroundPlane();
-
-    let hasPointer = false;
-    let px = 0;
-    let py = 0;
-    if (this.pointerActive && this.clientToNdc(this.pointerX, this.pointerY)
-      && this.groundPointAt(this.ndc.x, this.ndc.y, this.groundPoint)) {
-      hasPointer = true;
-      px = this.groundPoint.x;
-      py = this.groundPoint.y;
+    if (this.motionAllowed) {
+      this.cameraPos.lerp(this.targetPos, CAMERA_EASE);
+      this.cameraLook.lerp(this.targetLook, CAMERA_EASE);
+      this.camera.position.copy(this.cameraPos);
+      this.camera.lookAt(this.cameraLook);
+    } else {
+      this.snapCamera();
     }
 
+    this.updateGroundPlane();
+    const wellCount = this.resolveWells();
     this.expireRipples(t);
     prepareWaveFrame(this.waves, t);
 
-    const { centers, heights, well, baseColor, hoverColor } = this;
+    const { centers, heights, glow, well, baseColor, hoverColor } = this;
+    const { activeX, activeY, activeRadiusSq, activeDepth } = this;
     const matrices = this.mesh.instanceMatrix.array as Float32Array;
     const colors = (this.mesh.instanceColor as InstancedBufferAttribute).array as Float32Array;
     const rippleCount = this.rippleCount;
@@ -422,13 +543,13 @@ export class SpacetimeGrid {
       const cy = centers[i * 2 + 1];
 
       let target = 0;
-      if (hasPointer) {
-        const dx = cx - px;
-        const dy = cy - py;
+      for (let w = 0; w < wellCount; w++) {
+        const dx = cx - activeX[w];
+        const dy = cy - activeY[w];
         const distSq = dx * dx + dy * dy;
-        if (distSq < WELL_RADIUS_SQ) {
-          const k = 1 - distSq / WELL_RADIUS_SQ;
-          target += k * k * WELL_DEPTH;
+        if (distSq < activeRadiusSq[w]) {
+          const k = 1 - distSq / activeRadiusSq[w];
+          target += k * k * activeDepth[w];
         }
       }
 
@@ -447,22 +568,27 @@ export class SpacetimeGrid {
         ring += front * front * decay * this.rippleStrength[r];
       }
 
-      const z = wave - well[i] + ring * RIPPLE_HEIGHT;
+      const g = glow[i];
+      const z = wave - well[i] + ring * RIPPLE_HEIGHT + g * GLOW_LIFT;
       heights[i] = z;
       const m = i * 16;
       matrices[m + 12] = cx;
       matrices[m + 13] = cy;
       matrices[m + 14] = z;
 
-      const shade = 1 + wave * 0.9;
+      const mix = g > lit ? g : lit;
+      const shade = 1 + wave * 0.9 + g * GLOW_BRIGHTEN;
       const c = i * 3;
-      colors[c] = Math.min(1, (baseColor.r + (hoverColor.r - baseColor.r) * lit) * shade + hoverColor.r * ring);
-      colors[c + 1] = Math.min(1, (baseColor.g + (hoverColor.g - baseColor.g) * lit) * shade + hoverColor.g * ring);
-      colors[c + 2] = Math.min(1, (baseColor.b + (hoverColor.b - baseColor.b) * lit) * shade + hoverColor.b * ring);
+      colors[c] = Math.min(1, (baseColor.r + (hoverColor.r - baseColor.r) * mix) * shade + hoverColor.r * ring);
+      colors[c + 1] = Math.min(1, (baseColor.g + (hoverColor.g - baseColor.g) * mix) * shade + hoverColor.g * ring);
+      colors[c + 2] = Math.min(1, (baseColor.b + (hoverColor.b - baseColor.b) * mix) * shade + hoverColor.b * ring);
     }
 
     this.mesh.instanceMatrix.needsUpdate = true;
     (this.mesh.instanceColor as InstancedBufferAttribute).needsUpdate = true;
+
+    for (let p = 0; p < plugins.length; p++) plugins[p].plugin.afterFrame?.(frame);
+
     this.renderer.render(this.scene, this.camera);
   }
 }
