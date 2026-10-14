@@ -2,6 +2,7 @@
 title: Spacetime grid
 sidebar:
   label: Overview
+  order: 1
 description: An animated three.js grid with idle waves, a cursor gravity well and click ripples.
 ---
 

@@ -2,6 +2,7 @@
 title: Contribution skyline
 sidebar:
   label: Overview
+  order: 1
 description: GitHub contributions rendered as glowing three.js bars.
 ---
 

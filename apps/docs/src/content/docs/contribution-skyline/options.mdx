@@ -1,0 +1,21 @@
+---
+title: Options
+description: Every option of @abhiramkrishna/contribution-skyline, generated from the package's schema.
+tableOfContents: false
+sidebar:
+  order: 2
+---
+
+import OptionsTable from "../../../components/OptionsTable.astro";
+import { CONTRIBUTION_SKYLINE_SCHEMA } from "@abhiramkrishna/contribution-skyline";
+
+All options are live: change them with `setOptions()` on the standalone skyline or on the layer, or pass them to a wrapper as props. Options marked "standalone only" only apply to the standalone skyline; as a layer, it follows the grid's own motion and floor.
+
+```ts
+const skyline = new ContributionSkyline(el, data, { barScale: 1.4, bursts: false });
+skyline.setOptions({ twinkleDepth: 0.5, floor: false });
+```
+
+`progress` can also be a function in code. It's read every frame, which is how you drive the rise from scroll. These tables are generated from `CONTRIBUTION_SKYLINE_SCHEMA`.
+
+<OptionsTable schema={CONTRIBUTION_SKYLINE_SCHEMA} showLive={false} emptyColor="grid highlight" />

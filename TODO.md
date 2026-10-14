@@ -37,14 +37,14 @@ See `PLAN.md` for the full plan.
 
 ## 4. Docs site
 - [ ] Per package: overview, install, quick start, Vue / React / Web Component guides
-- [ ] Props/options reference tables (type, default, description)
+- [x] Props/options reference tables (type, default, description)
 - [ ] Live playground per component: controls that change props in real time + a copy-paste snippet that updates with them
 - [ ] Recipes: theming, performance tuning, reduced motion, grid + skyline together
 - [ ] Deploy on Vercel at `docs.abhiramkrishna.com` (DNS in Namecheap)
 
 ## 5. Sandbox page (docs site)
 - [x] Each package exports an options schema (name, type, default, min/max/step, group, description) — `SPACETIME_GRID_SCHEMA`, `CONTRIBUTION_SKYLINE_SCHEMA`
-- [ ] Generate the docs props tables from the same schema
+- [x] Generate the docs props tables from the same schema
 - [ ] `/sandbox` page: full-size live canvas + control panel (bottom sheet on phones)
 - [ ] Component switcher: grid, skyline, grid + skyline
 - [ ] Controls generated from the schema: sliders, colour pickers, toggles, dropdowns, text input
