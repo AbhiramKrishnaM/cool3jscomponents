@@ -13,10 +13,10 @@ export interface ParticlePool {
 
 export function createParticlePool(max: number, size: number): ParticlePool {
   const positions = new Float32Array(max * 3);
-  const colors = new Float32Array(max * 3);
+  const colors = new Float32Array(max * 4);
   const geometry = new BufferGeometry();
   geometry.setAttribute("position", new BufferAttribute(positions, 3));
-  geometry.setAttribute("color", new BufferAttribute(colors, 3));
+  geometry.setAttribute("color", new BufferAttribute(colors, 4));
   const material = new PointsMaterial({
     size,
     sizeAttenuation: false,
@@ -52,8 +52,9 @@ export function stepPool(pool: ParticlePool, dt: number, gravity: number, tint: 
   const b = Math.min(1, tint.b * 1.3 + 0.35);
   for (let i = 0; i < pool.max; i++) {
     const o = i * 3;
+    const c = i * 4;
     if (life[i] <= 0) {
-      colors[o] = colors[o + 1] = colors[o + 2] = 0;
+      colors[c] = colors[c + 1] = colors[c + 2] = colors[c + 3] = 0;
       positions[o + 2] = -50;
       continue;
     }
@@ -65,13 +66,14 @@ export function stepPool(pool: ParticlePool, dt: number, gravity: number, tint: 
     if (onLand && positions[o + 2] <= 0.02 && vel[o + 2] < 0) {
       onLand(positions[o], positions[o + 1]);
       life[i] = 0;
-      colors[o] = colors[o + 1] = colors[o + 2] = 0;
+      colors[c] = colors[c + 1] = colors[c + 2] = colors[c + 3] = 0;
       continue;
     }
     const fade = onLand ? 1 : Math.max(0, life[i] / maxLife[i]);
-    colors[o] = r * fade;
-    colors[o + 1] = g * fade;
-    colors[o + 2] = b * fade;
+    colors[c] = r * fade;
+    colors[c + 1] = g * fade;
+    colors[c + 2] = b * fade;
+    colors[c + 3] = 1;
   }
   pool.points.geometry.attributes.position.needsUpdate = true;
   pool.points.geometry.attributes.color.needsUpdate = true;

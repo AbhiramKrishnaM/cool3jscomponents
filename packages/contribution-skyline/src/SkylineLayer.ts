@@ -1,5 +1,6 @@
 import {
   BoxGeometry,
+  Color as ThreeColor,
   DynamicDrawUsage,
   InstancedBufferAttribute,
   InstancedMesh,
@@ -12,24 +13,19 @@ import {
 import type { CameraPose, GridFrame, GridPlugin, SpacetimeGrid } from "@abhiramkrishna/spacetime-grid";
 import {
   BAR_HEIGHT,
-  BAR_OPACITY,
-  BAR_STAGGER,
-  BURST_EVERY,
   BURST_FLASH,
-  BURST_LEVEL,
   DAYS_PER_WEEK,
   LEVEL_GLOW,
   SHARD_LIFE,
   SHARD_POOL,
-  SHARD_SIZE,
   SPARK_GRAVITY,
   SPARK_POOL,
   SPARK_SHARDS,
-  SPARK_SIZE,
   TWINKLE_PERIOD,
   VISIBLE_THRESHOLD,
 } from "./constants";
 import type { ContributionData } from "./data";
+import { DEFAULT_SKYLINE_SETTINGS, mergeSettings, type SkylineSettings } from "./options";
 import { createParticlePool, disposePool, emit, stepPool, type ParticlePool } from "./particles";
 import { barFrag, barVert } from "./shaders";
 
@@ -38,11 +34,13 @@ export interface SkylineAnchor {
   pose?: CameraPose;
 }
 
-export interface SkylineLayerOptions {
+export interface SkylineLayerOptions extends Partial<Omit<SkylineSettings, "progress">> {
   progress?: number | (() => number);
   origin?: { col: number; row: number };
   anchor?: SkylineAnchor;
 }
+
+export type SkylineLiveOptions = Partial<Omit<SkylineSettings, "progress">> & { progress?: number | (() => number) };
 
 interface Bars {
   mesh: InstancedMesh<BoxGeometry, ShaderMaterial>;
@@ -61,6 +59,8 @@ export class SkylineLayer implements GridPlugin {
   private grid: SpacetimeGrid | null = null;
   private data: ContributionData;
   private progressSource: number | (() => number);
+  private readonly opts: SkylineSettings;
+  private readonly customColor = new ThreeColor();
   private readonly origin: { col: number; row: number } | undefined;
   private readonly anchor: SkylineAnchor | undefined;
 
@@ -76,15 +76,43 @@ export class SkylineLayer implements GridPlugin {
   private hover: Color | null = null;
 
   constructor(data: ContributionData, options: SkylineLayerOptions = {}) {
+    const { progress, origin, anchor, ...rest } = options;
     this.data = data;
-    this.progressSource = options.progress ?? 1;
-    this.origin = options.origin;
-    this.anchor = options.anchor;
+    this.opts = mergeSettings({ ...DEFAULT_SKYLINE_SETTINGS }, rest);
+    this.progressSource = progress ?? this.opts.progress;
+    if (typeof progress === "number") this.opts.progress = progress;
+    this.origin = origin;
+    this.anchor = anchor;
+    this.applyColor();
+  }
+
+  get settings(): Readonly<SkylineSettings> {
+    return this.opts;
   }
 
   setProgress(progress: number | (() => number)): void {
     this.progressSource = progress;
+    if (typeof progress === "number") this.opts.progress = progress;
     this.grid?.invalidate();
+  }
+
+  setOptions(options: SkylineLiveOptions): void {
+    const { progress, ...rest } = options;
+    mergeSettings(this.opts, rest);
+    this.applyColor();
+    if (this.bars) this.bars.mesh.material.uniforms.uOpacity.value = this.opts.barOpacity;
+    if (this.sparks) this.sparks.points.material.size = this.opts.sparkSize;
+    if (this.shards) this.shards.points.material.size = this.opts.shardSize;
+    if (progress !== undefined) this.setProgress(progress);
+    else this.grid?.invalidate();
+  }
+
+  private applyColor(): void {
+    if (this.opts.color) this.customColor.set(this.opts.color);
+  }
+
+  private tint(): Color | null {
+    return this.opts.color ? this.customColor : this.hover;
   }
 
   setData(data: ContributionData): void {
@@ -109,13 +137,14 @@ export class SkylineLayer implements GridPlugin {
     const grid = this.grid;
     if (!grid) return;
     const source = this.progressSource;
-    this.strength = clamp(typeof source === "function" ? source() : source, 0, 1);
+    const progress = frame.motion ? (typeof source === "function" ? source() : source) : this.opts.reducedMotionProgress;
+    this.strength = clamp(progress, 0, 1);
     const { cells, cellGlow } = this;
     const glow = grid.glow;
-    const strength = this.strength;
+    const strength = this.strength * this.opts.glowStrength;
     for (let k = 0; k < cells.length; k++) {
       const cell = cells[k];
-      glow[cell] = strength > 0 ? cellGlow[k] * strength * this.twinkle(k, frame) : 0;
+      glow[cell] = strength > 0 ? Math.min(1, cellGlow[k] * strength * this.twinkle(k, frame)) : 0;
     }
   }
 
@@ -164,8 +193,8 @@ export class SkylineLayer implements GridPlugin {
     this.cellPeriod = Float32Array.from(period);
     this.cellOffset = Float32Array.from(offset);
     this.bars = this.buildBars(grid, barCells, barLevels, barWeeks, barTwinkle);
-    this.sparks = createParticlePool(SPARK_POOL, SPARK_SIZE);
-    this.shards = createParticlePool(SHARD_POOL, SHARD_SIZE);
+    this.sparks = createParticlePool(SPARK_POOL, this.opts.sparkSize);
+    this.shards = createParticlePool(SHARD_POOL, this.opts.shardSize);
     grid.group.add(this.bars.mesh, this.sparks.points, this.shards.points);
   }
 
@@ -194,7 +223,7 @@ export class SkylineLayer implements GridPlugin {
     const material = new ShaderMaterial({
       vertexShader: barVert,
       fragmentShader: barFrag,
-      uniforms: { ...UniformsUtils.clone(UniformsLib.fog), uOpacity: { value: BAR_OPACITY } },
+      uniforms: { ...UniformsUtils.clone(UniformsLib.fog), uOpacity: { value: this.opts.barOpacity } },
       transparent: true,
       depthWrite: false,
       fog: true,
@@ -220,18 +249,21 @@ export class SkylineLayer implements GridPlugin {
   }
 
   private twinkle(k: number, frame: GridFrame): number {
-    if (!frame.motion) return 1;
+    if (!frame.motion || !this.opts.twinkle) return 1;
     const phase = ((frame.t + this.cellOffset[k]) / this.cellPeriod[k]) % 1;
     if (phase < 0.92) return 1;
-    return 1 - 0.8 * (1 - Math.abs(phase - 0.96) / 0.04);
+    return 1 - this.opts.twinkleDepth * (1 - Math.abs(phase - 0.96) / 0.04);
   }
 
   private updateBars(frame: GridFrame): void {
     const bars = this.bars;
     const grid = this.grid;
-    const hover = this.hover;
+    const hover = this.tint();
     if (!bars || !grid || !hover) return;
     const strength = this.strength;
+    const { barScale, stagger, bursts, burstLevel, burstMinInterval } = this.opts;
+    const burstSpread = Math.max(0, this.opts.burstMaxInterval - burstMinInterval);
+    const canBurst = bursts && frame.motion;
     bars.mesh.visible = strength > VISIBLE_THRESHOLD && bars.count > 0;
     if (!bars.mesh.visible) return;
 
@@ -243,9 +275,9 @@ export class SkylineLayer implements GridPlugin {
     for (let i = 0; i < bars.count; i++) {
       const cell = bars.cell[i];
       const level = bars.level[i];
-      const rise = clamp(strength * (1 + BAR_STAGGER) - (bars.week[i] / this.weeks) * BAR_STAGGER, 0, 1);
+      const rise = clamp(strength * (1 + stagger) - (bars.week[i] / this.weeks) * stagger, 0, 1);
       const eased = rise * rise * (3 - 2 * rise);
-      const h = Math.max(0.001, BAR_HEIGHT[level] * eased);
+      const h = Math.max(0.001, BAR_HEIGHT[level] * barScale * eased);
       const x = centers[cell * 2];
       const y = centers[cell * 2 + 1];
       const z = heights[cell];
@@ -259,12 +291,12 @@ export class SkylineLayer implements GridPlugin {
       matrices[m + 14] = z;
 
       let flash = 0;
-      if (level === BURST_LEVEL && frame.motion && eased > 0.98) {
-        if (bars.nextBurst[i] < 0) bars.nextBurst[i] = t + Math.random() * BURST_EVERY[0];
+      if (canBurst && level >= burstLevel && eased > 0.98) {
+        if (bars.nextBurst[i] < 0) bars.nextBurst[i] = t + Math.random() * burstMinInterval;
         if (t >= bars.nextBurst[i]) {
           this.burst(x, y, z + h);
           bars.flashAt[i] = t;
-          bars.nextBurst[i] = t + BURST_EVERY[0] + Math.random() * (BURST_EVERY[1] - BURST_EVERY[0]);
+          bars.nextBurst[i] = t + burstMinInterval + Math.random() * burstSpread;
         }
         if (bars.flashAt[i] >= 0) flash = Math.max(0, 1 - (t - bars.flashAt[i]) / BURST_FLASH);
       }
@@ -303,7 +335,8 @@ export class SkylineLayer implements GridPlugin {
   };
 
   private updateParticles(frame: GridFrame): void {
-    const { sparks, shards, hover } = this;
+    const { sparks, shards } = this;
+    const hover = this.tint();
     if (!sparks || !shards || !hover) return;
     const visible = this.strength > VISIBLE_THRESHOLD;
     sparks.points.visible = visible;

@@ -31,7 +31,7 @@ See `PLAN.md` for the full plan.
 - [x] Rise driven by a 0–1 progress value the host controls
 - [x] Fetch helper for server / serverless / build time (username → JSON; optional token for private contributions, never in the browser) — based on `Portfolio/scripts/fetch-contributions.mjs`
 - [x] Flat 2D calendar component as the lightweight option
-- [ ] Options: colours/theme, bar height scale, twinkle on/off, bursts on/off + frequency, reduced motion
+- [x] Options: colours/theme, bar height scale, twinkle on/off, bursts on/off + frequency, reduced motion
 - [ ] Wrappers: Vue, React, Web Component
 - [ ] README with usage + screenshots
 
@@ -43,7 +43,7 @@ See `PLAN.md` for the full plan.
 - [ ] Deploy on Vercel at `docs.abhiramkrishna.com` (DNS in Namecheap)
 
 ## 5. Sandbox page (docs site)
-- [ ] Each package exports an options schema (name, type, default, min/max/step, group, description) — spacetime-grid done (`SPACETIME_GRID_SCHEMA`); skyline to do
+- [x] Each package exports an options schema (name, type, default, min/max/step, group, description) — `SPACETIME_GRID_SCHEMA`, `CONTRIBUTION_SKYLINE_SCHEMA`
 - [ ] Generate the docs props tables from the same schema
 - [ ] `/sandbox` page: full-size live canvas + control panel (bottom sheet on phones)
 - [ ] Component switcher: grid, skyline, grid + skyline
