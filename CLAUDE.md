@@ -59,7 +59,7 @@ All in `Portfolio/src/components/background/SpaceTimeGrid.vue` (~740 lines, Vue 
 
 ## Decided vs open
 
-Decided: monorepo (`packages/spacetime-grid`, `packages/contribution-skyline`, `apps/docs`), tsup builds (ESM + types), `three` as a peer dependency, Changesets for releases, Astro + Starlight docs deployed on Vercel at `docs.abhiramkrishna.com`, framework-agnostic core with Vue / React / Web Component wrappers, and a `/sandbox` page in the docs whose controls and props tables are both generated from an options schema each package exports.
+Decided: monorepo (`packages/spacetime-grid`, `packages/contribution-skyline`, `apps/docs`), tsup builds (ESM + types), `three` as a peer dependency, Changesets for releases, an Astro + React-islands showcase site (React Bits–style; Tailwind v4, shadcn/ui, Motion, cmdk, Shiki, Lucide; Starlight's look dropped) deployed on Vercel at `docs.abhiramkrishna.com`, framework-agnostic core with Vue / React / Web Component wrappers, and a `/sandbox` page in the docs whose controls and props tables are both generated from an options schema each package exports.
 
 Also decided: pnpm workspaces, scoped package names (`@abhiramkrishna/spacetime-grid`, `@abhiramkrishna/contribution-skyline`), MIT licence.
 

@@ -35,26 +35,24 @@ See `PLAN.md` for the full plan.
 - [x] Wrappers: Vue, React, Web Component
 - [x] README with usage + screenshots
 
-## 4. Docs site
+## 4. Docs site (Starlight version — superseded by §5, content reused)
 - [x] Per package: overview, install, quick start, Vue / React / Web Component guides
 - [x] Props/options reference tables (type, default, description)
 - [x] Live playground per component: controls that change props in real time + a copy-paste snippet that updates with them
+- [x] Each package exports an options schema — `SPACETIME_GRID_SCHEMA`, `CONTRIBUTION_SKYLINE_SCHEMA`
+
+## 5. Showcase site redesign (React Bits–style; decided 2026-10-15)
+Decided: Astro + React islands (drop Starlight's look), npm packages stay the install model, clean sans + Fira Code for code only, placeholder name for now. Libraries: Tailwind v4, shadcn/ui (Radix), Motion, cmdk, Shiki, Lucide. Take structure from reactbits.dev as inspiration only — no copied design or code.
+- [x] Set up Tailwind v4 + React + shadcn/ui in `apps/docs`; design tokens (dark, one accent), sans + mono fonts
+- [ ] App shell: glassy sticky navbar, ⌘K search (cmdk), theme toggle, GitHub link
+- [ ] Component registry: one entry per component (name, slug, category, description, badges New/Updated, schema, demo, snippet spec)
+- [ ] Landing page: spacetime grid as the live hero background + code card that drives it, with presets; feature bento; live showcase cards; install steps
+- [ ] Browse page: sidebar with category filters + filter box + grouped list with badges; grid of live preview cards; category + sort dropdowns
+- [ ] Component page: Preview / Code toggle, device sizes + full screen, Customize panel (custom controls from the schema, replaces Tweakpane), props table, prev / next, copy code in 4 formats
+- [ ] Move the written guides (getting started, data, plugins, API, frameworks) into the new shell as MDX
+- [ ] Sandbox extras: presets, reset/randomise, shareable URL, GitHub username → skyline via the serverless handler, FPS / pause / reduced-motion toggle
 - [ ] Recipes: theming, performance tuning, reduced motion, grid + skyline together
 - [ ] Deploy on Vercel at `docs.abhiramkrishna.com` (DNS in Namecheap)
-
-## 5. Sandbox page (docs site)
-- [x] Each package exports an options schema (name, type, default, min/max/step, group, description) — `SPACETIME_GRID_SCHEMA`, `CONTRIBUTION_SKYLINE_SCHEMA`
-- [x] Generate the docs props tables from the same schema
-- [ ] `/sandbox` page: full-size live canvas + control panel (bottom sheet on phones)
-- [ ] Component switcher: grid, skyline, grid + skyline
-- [ ] Controls generated from the schema: sliders, colour pickers, toggles, dropdowns, text input
-- [ ] Live updates without remounting where possible; rebuild only for structural changes (e.g. grid size)
-- [ ] Presets (Portfolio default, Calm, Neon, Day/Dusk/Night), reset, randomise
-- [ ] Shareable URL holding the current settings
-- [ ] "Copy code" for the current props (Vue / React / Web Component / plain JS) + "Open in StackBlitz"
-- [ ] Skyline: enter any GitHub username → fetched via the docs' serverless helper (no token in the browser)
-- [ ] FPS readout, pause, reduced-motion toggle
-- [ ] Decide control library: Tweakpane (themed) vs custom
 
 ## 6. Release
 - [ ] Publish both packages to npm via Changesets

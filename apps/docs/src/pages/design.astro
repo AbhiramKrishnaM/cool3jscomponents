@@ -1,0 +1,28 @@
+---
+import Site from "@/layouts/Site.astro";
+import { DesignCheck } from "@/components/DesignCheck";
+
+const swatches = ["background", "card", "secondary", "muted", "accent", "primary", "border", "stage"];
+---
+
+<Site title="Design tokens" noindex>
+  <main class="mx-auto max-w-5xl px-6 py-16">
+    <p class="font-mono text-xs uppercase tracking-widest text-primary">design check</p>
+    <h1 class="mt-3 text-5xl font-semibold tracking-tight">Live three.js components</h1>
+    <p class="mt-4 max-w-xl text-lg text-muted-foreground">
+      Geist for text, Fira Code for <code class="rounded bg-muted px-1.5 py-0.5 text-sm">code</code> and small labels.
+      One accent colour on a quiet dark background.
+    </p>
+    <div class="mt-10">
+      <DesignCheck client:load />
+    </div>
+    <div class="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      {swatches.map((name) => (
+        <div class="rounded-xl border bg-card p-3">
+          <div class="h-14 rounded-lg border" style={`background: var(--${name})`} />
+          <p class="mt-2 font-mono text-xs text-muted-foreground">--{name}</p>
+        </div>
+      ))}
+    </div>
+  </main>
+</Site>

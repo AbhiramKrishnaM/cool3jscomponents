@@ -63,42 +63,27 @@ Source today: the contribution bars + particles inside `SpaceTimeGrid.vue`, the 
 **Options**
 - Colours/theme, bar height scale, twinkle on/off, bursts on/off (+ frequency), rise progress, reduced-motion fallback
 
-## Docs site — `apps/docs`
+## Showcase site — `apps/docs`
 
-Astro + the **Starlight** docs theme (sidebar, search, dark mode, MDX).
+A component showcase in the spirit of [reactbits.dev](https://www.reactbits.dev): the components are the product, shown live and full size, with docs around them. Structure is inspired by React Bits; design and code are our own.
 
-- Look matches the portfolio: Fira Code, the dark theme tokens from `Portfolio/DESIGN.md`
-- Per package: overview, install, quick start, framework guides (Vue / React / Web Component)
-- Props/options reference table for every parameter (type, default, description)
-- Live playground per component: interactive demo with controls that change props in real time, plus a copy-paste code snippet that updates with the controls
-- Recipes: theming, performance tuning, reduced motion, combining grid + skyline
-- Deployed on Vercel at a subdomain, e.g. `docs.abhiramkrishna.com`; linked from the portfolio and both npm READMEs
+**Stack (decided 2026-10-15):** Astro with React islands for anything interactive. Static pages stay static; MDX for the written guides. Starlight's look is dropped; its written content moves into the new shell.
+**Libraries:** Tailwind CSS v4, shadcn/ui (Radix primitives), Motion, cmdk (⌘K search), Shiki (code), Lucide (icons).
+**Look:** dark, spacious, one accent colour. A clean sans for text; Fira Code only for code and small labels. Name and logo are placeholders until the project name is picked.
 
-## Sandbox — live component playground
+**Pages**
+- **Landing:** the spacetime grid as the live hero background, with a code card beside the headline whose values drive it, plus presets. Then a feature bento, live showcase cards and install steps.
+- **Browse:** sidebar with category filters, a filter box and the components grouped by category (New / Updated badges); a grid of live preview cards; category and sort dropdowns.
+- **Component page:** title and description, Preview / Code toggle, device sizes and full screen, a Customize panel of custom controls generated from the schema, the props table, copy code in four formats (JS, Vue, React, Web Component), previous / next.
+- **Guides:** getting started, data, plugins, API and framework pages, moved from the Starlight version.
 
-A dedicated page in the docs site where people play with each component live, separate from the small inline demos on the reference pages.
+**Component registry:** one entry per component (name, slug, category, description, badges, schema, demo, snippet spec), so adding a component means adding a package and one registry entry.
 
-**Layout**
-- Full-size live canvas running the real component (the same package code that gets published)
-- Side panel of controls; on phones the panel becomes a bottom sheet
-- Component switcher at the top (grid, skyline, grid + skyline together)
+**Sandbox extras:** presets, reset / randomise, shareable URL, any GitHub username → skyline through the serverless handler, FPS readout, pause, reduced-motion toggle.
 
-**Controls — generated from each component's props schema**
-- Each package exports a small schema for its options (name, type, default, min/max/step, description). The sandbox builds its controls from it, and the docs props tables are generated from the same schema — one source of truth, so docs and sandbox never drift from the code
-- Control types: sliders (numbers), colour pickers, toggles, dropdowns, text (e.g. GitHub username for the skyline)
-- Grouped like the docs (Grid, Waves, Gravity well, Ripples, Colours, Bars, Twinkle, Bursts)
-- Changes apply live without remounting where possible (e.g. colours, strengths), and rebuild only when needed (e.g. grid size)
+**Install model:** npm packages (unchanged); no copy-source registry.
 
-**Extras**
-- Presets (e.g. "Portfolio default", "Calm", "Neon", "Day / Dusk / Night")
-- Reset to defaults, randomise
-- Shareable link — the current settings live in the URL
-- "Copy code" with the current props, as Vue, React, Web Component or plain JS
-- "Open in StackBlitz" to continue editing in a full online editor
-- Live data: type any GitHub username to see their skyline (fetched through the docs site's serverless helper, never with a token in the browser)
-- FPS / performance readout, a reduced-motion toggle, and a pause button
-
-**Library choice (decide when building):** Tweakpane or lil-gui for a quick, solid control panel, vs. custom controls styled to match the docs. Suggestion: start with Tweakpane themed to the docs, swap for custom only if it doesn't fit the look.
+Deployed on Vercel at `docs.abhiramkrishna.com`; linked from the portfolio and both READMEs.
 
 ## Planned layout (not created yet)
 
@@ -142,6 +127,6 @@ threejscomponents/
 2. Extract **spacetime-grid** (portfolio task 11)
 3. Extract **contribution-skyline** (portfolio task 10)
 4. Fill the docs: props tables, playgrounds, recipes (portfolio task 12)
-5. Build the sandbox page (generated controls, presets, share links, code export)
+5. Rebuild the docs as the showcase site (landing, browse, component pages, sandbox extras)
 6. Publish both packages to npm
 7. Switch the portfolio over to the published packages

@@ -1,6 +1,8 @@
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import react from "@astrojs/react";
+import tailwindcss from "@tailwindcss/vite";
 
 const packageSource = (name) => fileURLToPath(new URL(`../../packages/${name}/src`, import.meta.url));
 const grid = packageSource("spacetime-grid");
@@ -9,6 +11,7 @@ const skyline = packageSource("contribution-skyline");
 export default defineConfig({
   site: "https://docs.abhiramkrishna.com",
   vite: {
+    plugins: [tailwindcss()],
     resolve: {
       alias: [
         { find: /^@abhiramkrishna\/spacetime-grid$/, replacement: `${grid}/index.ts` },
@@ -19,6 +22,7 @@ export default defineConfig({
     },
   },
   integrations: [
+    react(),
     starlight({
       title: "threejscomponents",
       description: "Reusable three.js components from abhiramkrishna.com: the spacetime grid and the contribution skyline.",
