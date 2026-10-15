@@ -1,5 +1,8 @@
 ---
 import "@/styles/global.css";
+import { Navbar } from "@/components/shell/Navbar";
+import { GITHUB_URL, SITE_NAME, THEME_STORAGE_KEY } from "@/lib/site";
+import { getSearchEntries } from "@/lib/search";
 
 interface Props {
   title: string;
@@ -8,6 +11,8 @@ interface Props {
 }
 
 const { title, description = "Live three.js components for the web.", noindex = false } = Astro.props;
+const entries = await getSearchEntries();
+const pageTitle = title === SITE_NAME ? title : `${title} · ${SITE_NAME}`;
 ---
 
 <!doctype html>
@@ -15,12 +20,28 @@ const { title, description = "Live three.js components for the web.", noindex = 
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
+    <title>{pageTitle}</title>
     <meta name="description" content={description} />
     {noindex && <meta name="robots" content="noindex" />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <script is:inline define:vars={{ key: THEME_STORAGE_KEY }}>
+      try {
+        document.documentElement.classList.toggle("dark", localStorage.getItem(key) !== "light");
+      } catch {
+        document.documentElement.classList.add("dark");
+      }
+    </script>
   </head>
-  <body class="min-h-dvh">
-    <slot />
+  <body class="flex min-h-dvh flex-col">
+    <Navbar client:load entries={entries} pathname={Astro.url.pathname} />
+    <div class="flex-1">
+      <slot />
+    </div>
+    <footer class="border-t">
+      <div class="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-2 px-4 py-6 text-sm text-muted-foreground sm:px-6">
+        <p>MIT licensed · built by <a class="hover:text-foreground" href="https://www.abhiramkrishna.com">Abhiram Krishna M</a></p>
+        <a class="hover:text-foreground" href={GITHUB_URL}>GitHub</a>
+      </div>
+    </footer>
   </body>
 </html>

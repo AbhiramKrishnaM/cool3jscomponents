@@ -44,7 +44,7 @@ See `PLAN.md` for the full plan.
 ## 5. Showcase site redesign (React Bits–style; decided 2026-10-15)
 Decided: Astro + React islands (drop Starlight's look), npm packages stay the install model, clean sans + Fira Code for code only, placeholder name for now. Libraries: Tailwind v4, shadcn/ui (Radix), Motion, cmdk, Shiki, Lucide. Take structure from reactbits.dev as inspiration only — no copied design or code.
 - [x] Set up Tailwind v4 + React + shadcn/ui in `apps/docs`; design tokens (dark, one accent), sans + mono fonts
-- [ ] App shell: glassy sticky navbar, ⌘K search (cmdk), theme toggle, GitHub link
+- [x] App shell: glassy sticky navbar, ⌘K search (cmdk), theme toggle, GitHub link
 - [ ] Component registry: one entry per component (name, slug, category, description, badges New/Updated, schema, demo, snippet spec)
 - [ ] Landing page: spacetime grid as the live hero background + code card that drives it, with presets; feature bento; live showcase cards; install steps
 - [ ] Browse page: sidebar with category filters + filter box + grouped list with badges; grid of live preview cards; category + sort dropdowns
