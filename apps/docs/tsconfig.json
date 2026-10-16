@@ -6,7 +6,11 @@
     "jsx": "react-jsx",
     "jsxImportSource": "react",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@abhiramkrishna/spacetime-grid": ["../../packages/spacetime-grid/src/index.ts"],
+      "@abhiramkrishna/spacetime-grid/*": ["../../packages/spacetime-grid/src/*/index.ts"],
+      "@abhiramkrishna/contribution-skyline": ["../../packages/contribution-skyline/src/index.ts"],
+      "@abhiramkrishna/contribution-skyline/*": ["../../packages/contribution-skyline/src/*/index.ts"]
     }
   }
 }

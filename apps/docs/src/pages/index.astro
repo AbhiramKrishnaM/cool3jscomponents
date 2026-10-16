@@ -1,0 +1,226 @@
+---
+import { Image } from "astro:assets";
+import { ArrowRight, BookOpen, Gauge, Layers, MoonStar, Pause, SlidersHorizontal } from "lucide-react";
+import Site from "@/layouts/Site.astro";
+import { GithubMark } from "@/components/shell/GithubMark";
+import { GITHUB_URL, SITE_NAME } from "@/lib/site";
+import { COMPONENTS, badgeFor, categoryLabel, snippet } from "@/registry";
+import { spacetimeGrid } from "@/registry/spacetime-grid";
+import { HERO_CONTROLS, HERO_PRESETS } from "@/landing/presets";
+import { highlight } from "@/lib/highlight";
+
+const presets = await Promise.all(HERO_PRESETS.map(async (preset) => {
+  const source = snippet("js", spacetimeGrid.snippet, HERO_CONTROLS, preset.values);
+  return { ...preset, source, html: await highlight(source) };
+}));
+
+const frameworks = [
+  { label: "JavaScript", code: "new SpacetimeGrid(el);" },
+  { label: "Vue", code: "<SpacetimeGrid :wave-speed=\"1.2\" />" },
+  { label: "React", code: "<SpacetimeGrid waveSpeed={1.2} />" },
+  { label: "Web Component", code: "<spacetime-grid></spacetime-grid>" },
+];
+
+const managers = [
+  { id: "pnpm", command: "pnpm add @abhiramkrishna/spacetime-grid three" },
+  { id: "npm", command: "npm install @abhiramkrishna/spacetime-grid three" },
+  { id: "yarn", command: "yarn add @abhiramkrishna/spacetime-grid three" },
+  { id: "bun", command: "bun add @abhiramkrishna/spacetime-grid three" },
+];
+
+const mountSource = `import { SpacetimeGrid } from "@abhiramkrishna/spacetime-grid";
+
+const grid = new SpacetimeGrid(document.querySelector("#background"));
+grid.setTheme({ hover: "#43d9ad" });`;
+const mountHtml = await highlight(mountSource);
+
+const chip = "rounded-full border border-white/10 px-3 py-1 font-mono text-xs text-white/60 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-pressed:border-primary/50 aria-pressed:bg-primary/15 aria-pressed:text-primary";
+const tab = "rounded-md px-2.5 py-1 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground aria-selected:bg-secondary aria-selected:text-foreground";
+---
+
+<Site title={SITE_NAME} description="Live three.js backgrounds and data visuals for Vue, React and plain HTML.">
+  <section class="dark relative isolate overflow-hidden border-b bg-stage text-foreground" data-hero data-presets={JSON.stringify(presets.map(({ id, values }) => ({ id, values })))}>
+    <div class="absolute inset-0 -z-10 opacity-0 transition-opacity duration-1000 data-ready:opacity-100" data-hero-stage></div>
+    <div class="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_30%_40%,rgb(1_22_39/0.85),transparent_65%)]"></div>
+    <div class="mx-auto grid max-w-7xl items-center gap-12 px-4 pt-20 pb-24 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:pt-28 lg:pb-32">
+      <div class="pointer-events-none">
+        <p class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 font-mono text-xs text-white/70 backdrop-blur">
+          <span class="size-1.5 rounded-full bg-primary"></span>
+          {COMPONENTS.length} components · MIT
+        </p>
+        <h1 class="mt-6 max-w-xl text-4xl font-semibold tracking-tight text-balance text-white sm:text-5xl lg:text-6xl">
+          three.js components that move when you do.
+        </h1>
+        <p class="mt-5 max-w-lg text-lg text-pretty text-white/65">
+          The backgrounds and data visuals from abhiramkrishna.com, packaged for npm. Use them in Vue, React or plain HTML and tune every option live.
+        </p>
+        <div class="pointer-events-auto mt-8 flex flex-wrap gap-3">
+          <a href="/spacetime-grid/getting-started/" class="inline-flex h-10 items-center gap-2 rounded-md bg-primary px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-stage focus-visible:outline-none">
+            Get started <ArrowRight class="size-4" />
+          </a>
+          <a href={GITHUB_URL} target="_blank" rel="noreferrer" class="inline-flex h-10 items-center gap-2 rounded-md border border-white/15 bg-white/5 px-5 text-sm font-medium text-white backdrop-blur transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+            <GithubMark className="size-4" /> GitHub
+          </a>
+        </div>
+        <p class="mt-10 hidden font-mono text-xs text-white/40 sm:block">Move your cursor across the grid. Click anywhere for a ripple.</p>
+      </div>
+
+      <div class="min-w-0 overflow-hidden rounded-xl border border-white/10 bg-stage/80 shadow-2xl shadow-black/40 backdrop-blur-md">
+        <div class="flex items-center justify-between gap-3 border-b border-white/10 px-4 py-2.5">
+          <span class="font-mono text-xs text-white/50">hero.ts</span>
+          <button type="button" class="rounded-md px-2 py-1 font-mono text-xs text-white/60 transition-colors hover:bg-white/10 hover:text-white" data-hero-copy>Copy</button>
+        </div>
+        <div class="flex flex-wrap gap-2 border-b border-white/10 px-4 py-3" role="group" aria-label="Presets">
+          {presets.map((preset, index) => (
+            <button type="button" class={chip} data-preset={preset.id} aria-pressed={index === 0 ? "true" : "false"}>{preset.label}</button>
+          ))}
+        </div>
+        <div class="min-h-[13.5rem] text-[13px] leading-relaxed [&_pre]:!bg-transparent [&_pre]:overflow-x-auto [&_pre]:px-4 [&_pre]:py-4">
+          {presets.map((preset, index) => (
+            <div data-preset-code={preset.id} data-source={preset.source} hidden={index !== 0}>
+              <Fragment set:html={preset.html} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="mx-auto max-w-7xl px-4 sm:px-6">
+    <section class="py-24" aria-labelledby="features">
+      <h2 id="features" class="max-w-2xl text-3xl font-semibold tracking-tight text-balance sm:text-4xl">Built like the portfolio they came from.</h2>
+      <p class="mt-3 max-w-2xl text-muted-foreground">Ported line by line from a live site, then given options, wrappers and a schema.</p>
+      <div class="mt-10 grid gap-4 md:grid-cols-6">
+        <article class="rounded-xl border bg-card p-6 md:col-span-4">
+          <Layers class="size-5 text-primary" />
+          <h3 class="mt-4 font-medium">Drop into any stack</h3>
+          <p class="mt-1 text-sm text-muted-foreground">A framework-free core with thin Vue, React and Web Component wrappers. three is a peer dependency, so you ship one copy.</p>
+          <ul class="mt-5 grid gap-2 sm:grid-cols-2">
+            {frameworks.map((framework) => (
+              <li class="rounded-lg border bg-background px-3 py-2.5">
+                <p class="text-xs text-muted-foreground">{framework.label}</p>
+                <code class="mt-1 block truncate text-xs">{framework.code}</code>
+              </li>
+            ))}
+          </ul>
+        </article>
+        <article class="flex flex-col rounded-xl border bg-card p-6 md:col-span-2">
+          <Gauge class="size-5 text-primary" />
+          <h3 class="mt-4 font-medium">A frame loop that stays out of the way</h3>
+          <p class="mt-1 text-sm text-muted-foreground">Waves are precomputed per tile, so each frame does no trig and no allocation.</p>
+          <p class="mt-auto pt-6 font-mono text-3xl font-semibold tracking-tight">18% <span class="text-muted-foreground">→</span> <span class="text-primary">4.5%</span></p>
+          <p class="mt-1 text-xs text-muted-foreground">Grid CPU share on the portfolio, before and after.</p>
+        </article>
+        <article class="rounded-xl border bg-card p-6 md:col-span-2">
+          <MoonStar class="size-5 text-primary" />
+          <h3 class="mt-4 font-medium">Reduced motion, handled</h3>
+          <p class="mt-1 text-sm text-muted-foreground">With <code class="text-xs">prefers-reduced-motion</code> set, every component renders a still frame instead of animating.</p>
+        </article>
+        <article class="rounded-xl border bg-card p-6 md:col-span-2">
+          <Pause class="size-5 text-primary" />
+          <h3 class="mt-4 font-medium">Sleeps when unseen</h3>
+          <p class="mt-1 text-sm text-muted-foreground">Rendering pauses when the canvas scrolls away or the tab is hidden, and the pixel ratio is capped.</p>
+        </article>
+        <article class="rounded-xl border bg-card p-6 md:col-span-2">
+          <SlidersHorizontal class="size-5 text-primary" />
+          <h3 class="mt-4 font-medium">One schema, many uses</h3>
+          <p class="mt-1 text-sm text-muted-foreground">Every option ships with a type, range and description. The playgrounds and props tables here are generated from it.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="border-t py-24" aria-labelledby="components">
+      <h2 id="components" class="text-3xl font-semibold tracking-tight sm:text-4xl">Components</h2>
+      <p class="mt-3 max-w-2xl text-muted-foreground">Each one runs live below. Open it for the guide, a playground and copy-ready code.</p>
+      <div class="mt-10 grid gap-6 md:grid-cols-2">
+        {COMPONENTS.map((entry) => {
+          const badge = badgeFor(entry);
+          return (
+            <a href={entry.guideHref} class="group overflow-hidden rounded-xl border bg-card transition-colors hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-showcase={entry.slug}>
+              <div class="relative aspect-[16/9] overflow-hidden bg-stage">
+                <Image src={entry.poster} alt="" width={800} class="absolute inset-0 size-full object-cover transition-opacity duration-700 group-data-live:opacity-0" />
+                <div class="absolute inset-0" data-showcase-stage></div>
+              </div>
+              <div class="flex items-start justify-between gap-4 p-5">
+                <div>
+                  <h3 class="font-medium">{entry.name}</h3>
+                  <p class="mt-1 text-sm text-muted-foreground">{entry.description}</p>
+                </div>
+                <div class="flex shrink-0 items-center gap-2">
+                  {badge && <span class="rounded-full bg-accent px-2 py-0.5 font-mono text-[11px] text-accent-foreground capitalize">{badge}</span>}
+                  <span class="rounded-full border px-2 py-0.5 font-mono text-[11px] text-muted-foreground">{categoryLabel(entry.category)}</span>
+                </div>
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    </section>
+
+    <section class="border-t py-24" aria-labelledby="install">
+      <h2 id="install" class="text-3xl font-semibold tracking-tight sm:text-4xl">Up and running in three steps</h2>
+      <ol class="mt-10 grid gap-6 lg:grid-cols-3">
+        <li class="flex min-w-0 flex-col rounded-xl border bg-card p-6">
+          <span class="flex size-7 items-center justify-center rounded-full bg-accent font-mono text-xs text-accent-foreground">1</span>
+          <h3 class="mt-4 font-medium">Install</h3>
+          <p class="mt-1 text-sm text-muted-foreground">Add the package and three.</p>
+          <div class="mt-5 overflow-hidden rounded-lg border bg-background" data-install>
+            <div class="flex items-center gap-1 border-b px-2 py-1.5" role="tablist" aria-label="Package manager">
+              {managers.map((manager, index) => (
+                <button type="button" role="tab" class={tab} data-manager={manager.id} aria-selected={index === 0 ? "true" : "false"}>{manager.id}</button>
+              ))}
+            </div>
+            {managers.map((manager, index) => (
+              <div class="flex items-center gap-2 px-3 py-3" data-manager-panel={manager.id} hidden={index !== 0}>
+                <code class="min-w-0 flex-1 truncate text-xs">{manager.command}</code>
+                <button type="button" class="shrink-0 rounded-md px-2 py-1 font-mono text-xs text-muted-foreground hover:bg-secondary hover:text-foreground" data-copy-text={manager.command}>Copy</button>
+              </div>
+            ))}
+          </div>
+        </li>
+        <li class="flex min-w-0 flex-col rounded-xl border bg-card p-6">
+          <span class="flex size-7 items-center justify-center rounded-full bg-accent font-mono text-xs text-accent-foreground">2</span>
+          <h3 class="mt-4 font-medium">Mount</h3>
+          <p class="mt-1 text-sm text-muted-foreground">Point it at any element. It fills it and follows its size.</p>
+          <div class="mt-5 overflow-hidden rounded-lg border bg-stage text-xs [&_pre]:!bg-transparent [&_pre]:overflow-x-auto [&_pre]:p-3">
+            <Fragment set:html={mountHtml} />
+          </div>
+        </li>
+        <li class="flex min-w-0 flex-col rounded-xl border bg-card p-6">
+          <span class="flex size-7 items-center justify-center rounded-full bg-accent font-mono text-xs text-accent-foreground">3</span>
+          <h3 class="mt-4 font-medium">Tune</h3>
+          <p class="mt-1 text-sm text-muted-foreground">Change options live in the playground, then copy the code for your framework.</p>
+          <div class="mt-auto flex flex-col gap-2 pt-5">
+            {COMPONENTS.map((entry) => (
+              <a href={entry.guideHref} class="flex items-center justify-between rounded-lg border bg-background px-3 py-2.5 text-sm transition-colors hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+                <span class="flex items-center gap-2"><BookOpen class="size-4 text-muted-foreground" /> {entry.name}</span>
+                <ArrowRight class="size-4 text-muted-foreground" />
+              </a>
+            ))}
+          </div>
+        </li>
+      </ol>
+    </section>
+  </main>
+</Site>
+
+<script>
+  import { initCopyButtons, initHero } from "@/landing/hero";
+  import { initShowcase } from "@/landing/showcase";
+
+  const hero = document.querySelector<HTMLElement>("[data-hero]");
+  if (hero) void initHero(hero);
+  initShowcase(document);
+  initCopyButtons(document);
+
+  for (const install of document.querySelectorAll<HTMLElement>("[data-install]")) {
+    const tabs = [...install.querySelectorAll<HTMLButtonElement>("[data-manager]")];
+    const panels = [...install.querySelectorAll<HTMLElement>("[data-manager-panel]")];
+    for (const tab of tabs) {
+      tab.addEventListener("click", () => {
+        for (const other of tabs) other.setAttribute("aria-selected", String(other === tab));
+        for (const panel of panels) panel.hidden = panel.dataset.managerPanel !== tab.dataset.manager;
+      });
+    }
+  }
+</script>

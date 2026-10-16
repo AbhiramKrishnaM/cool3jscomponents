@@ -1,5 +1,5 @@
 import { Pane } from "tweakpane";
-import type { ControlSchema, Values } from "./types";
+import type { ControlSchema, Values } from "@/registry/types";
 
 export interface PanelHandle {
   refresh(): void;
