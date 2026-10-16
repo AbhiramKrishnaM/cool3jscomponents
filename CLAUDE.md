@@ -4,7 +4,7 @@ Guidance for Claude Code in this repository.
 
 ## What this is
 
-A planned monorepo for two reusable three.js components extracted from Abhiram's portfolio, plus an Astro docs site. **Read `PLAN.md` (the what/why) and `TODO.md` (the steps) first.** Nothing is scaffolded until the open decisions in `TODO.md` §0 are made and the user runs `git init`.
+A monorepo for two reusable three.js components extracted from Abhiram's portfolio, plus an Astro docs site. **Read `PLAN.md` (the what/why) and `TODO.md` (the steps) first.** Both packages are built; current work is the showcase-site redesign in `TODO.md` §5.
 
 ## The source of truth is the portfolio
 
@@ -47,6 +47,16 @@ All in `Portfolio/src/components/background/SpaceTimeGrid.vue` (~740 lines, Vue 
 
 **Do not port** (they stay in the portfolio and have third-party licences): the Codrops cardboard box (`story/cardboardBox.js`, MIT) and the keyboard model (`public/models/keyboard.glb`, CC-BY by Benbop). These packages should be 100% original code.
 
+## Docs site (`apps/docs`)
+
+Astro + React islands + Tailwind v4. New pages use `src/layouts/Site.astro` (glass navbar, ⌘K search, theme toggle); the Starlight guides under `src/content/docs/` stay until they're migrated to the new shell.
+
+- **Component registry** (`src/registry/`): one `ComponentEntry` per component (slug, name, category, description, keywords, `addedAt`/`updatedAt` → New/Updated badges, poster, snippet spec, and a lazy `load()` returning schema + controls + `create(stage, values)`). Adding a component = add an entry file and list it in `COMPONENTS` in `registry/index.ts`. Helpers: `getComponent`, `componentsByCategory`, `neighbours`, `badgeFor`, `componentHref` (`/components/<slug>/` — those pages don't exist yet), `snippet()` (JS / Vue / React / Web Component code from changed values), `defaultValues`, `pick`, `splitTheme` (`theme.*` keys → theme object).
+- **Playground** (`src/components/Playground.astro`, `src/playground/`): `<Playground kind="<registry slug>" />`; it reads everything from the registry.
+- **Landing page** (`src/pages/index.astro`, scripts in `src/landing/`): live grid hero with a preset-driven code card (`landing/presets.ts`), feature bento, live showcase cards (mounted while in view, destroyed when out, posters only under reduced motion), install steps. The hero is always dark, even in light mode. Cards link to the guides until the component pages exist.
+- **Code highlighting:** Astro's `<Code>` from `astro:components` fails here with "Theme … is not included in this bundle" for every theme. Use `highlight()` from `src/lib/highlight.ts` (Shiki `codeToHtml`, `night-owl`, build time) with `<Fragment set:html>`. Give the wrapper `[&_pre]:overflow-x-auto`, and give grid children `min-w-0`, or long code lines push the page wider than a phone screen.
+- **Check before ticking a step:** `pnpm typecheck`, `pnpm build`, `npx eslint`, then drive `pnpm preview` with Playwright at phone + desktop widths, dark + light, and check for console errors and `scrollWidth > innerWidth`.
+
 ## Rules carried over from the portfolio
 
 - **No code comments** unless the user approves that specific comment first (JS, template or CSS). Express intent through naming. Empty `catch {}` fails `no-empty` — use `catch { return; }`.
@@ -69,4 +79,4 @@ Open: the project name (deferred — `threejscomponents` is a working name). Ask
 
 - Plan in `TODO.md`; tick items off as they're done.
 - Don't create folders/packages before the user asks — they want to review the plan first.
-- Verify visually: build the docs/demo and drive it with Playwright (WebGL works headlessly with the cached Chromium at `~/Library/Caches/ms-playwright/chromium-1228/…` and `--use-gl=angle`).
+- Verify visually: build the docs/demo and drive it with Playwright (WebGL works headlessly with `playwright-core` and the cached `~/Library/Caches/ms-playwright/chromium_headless_shell-1234/chrome-headless-shell-mac-arm64/chrome-headless-shell`, launched with `--use-gl=angle --enable-unsafe-swiftshader --ignore-gpu-blocklist`).
