@@ -63,6 +63,6 @@ Decided: Astro + React islands (drop Starlight's look), npm packages stay the in
 - [ ] Deploy on Vercel at `docs.abhiramkrishna.com` (DNS in Namecheap)
 
 ## 6. Release
-- [ ] Publish both packages to npm via Changesets
+- [x] Publish both packages to npm via Changesets — `0.1.0` live 2026-10-18 (npm account needs 2FA; new publishes are staged and reviewed by npm for a few minutes before `latest` moves)
 - [ ] Link the docs from both READMEs and from the portfolio
 - [ ] Switch the portfolio to the published packages (portfolio todo tasks 10–12)
