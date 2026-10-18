@@ -4,7 +4,7 @@ Guidance for Claude Code in this repository.
 
 ## What this is
 
-A monorepo for two reusable three.js components extracted from Abhiram's portfolio, plus an Astro docs site. **Read `PLAN.md` (the what/why) and `TODO.md` (the steps) first.** Both packages are built; current work is the showcase-site redesign in `TODO.md` §5.
+A monorepo for two reusable three.js components extracted from Abhiram's portfolio, plus an Astro docs site. **Read `PLAN.md` (the what/why) and `TODO.md` (the steps) first.** Both packages are published on npm (`0.1.0`, 2026-10-18) and the docs site is live at https://docs.abhiramkrishna.com. What's left is in `TODO.md`: docs links + a `0.1.1` patch, the GitHub username → skyline function, switching the portfolio to the packages, and the project name.
 
 ## The source of truth is the portfolio
 
@@ -60,6 +60,14 @@ Astro + React islands + Tailwind v4 + MDX (Starlight and Tweakpane are gone). Ev
 - **Code highlighting:** Markdown/MDX code fences use Shiki `night-owl` with the `codeFrame()` transformer (`src/lib/code-frame.mjs`), which wraps each block in a `figure.code-frame` with a caption (`title="…"` meta, else the language) and a Copy button. In `.astro` pages, Astro's `<Code>` from `astro:components` fails with "Theme … is not included in this bundle" for every theme. Use `highlight()` from `src/lib/highlight.ts` (Shiki `codeToHtml`, `night-owl`, build time) with `<Fragment set:html>`. Give the wrapper `[&_pre]:overflow-x-auto`, and give grid children `min-w-0`, or long code lines push the page wider than a phone screen.
 - **Check before ticking a step:** `pnpm typecheck`, `pnpm build`, `npx eslint`, then drive `pnpm preview` with Playwright at phone + desktop widths, dark + light, and check for console errors and `scrollWidth > innerWidth`.
 
+## Releases and deploys
+
+- **npm:** published from the user's own account `abhiramkrishna` (owns the `@abhiramkrishna` scope). Flow: add a changeset → `pnpm changeset version` → commit → the **user** runs `! pnpm release --otp=<code>` (2FA is on and required; Claude can't answer the OTP prompt). Before publishing: `pnpm pack` both packages and install the tarballs into an empty project to check every entry point. Publishing is permanent — always confirm with the user first.
+- **npm staged publishing:** a first publish shows a `0.0.0-stage` "Temporary Holding Version" while npm reviews it for a few minutes, then `latest` moves to the real version. npmjs.com pages lag the registry; check with `npm view <pkg> dist-tags` or the registry JSON, not the website.
+- **Package metadata:** `repository.directory` must stay set — npm renders the README's relative `./media/*.png` screenshots from GitHub through it (`media/` isn't in the tarball). `homepage` still points at the GitHub folder; switch it to the docs site in the next release.
+- **Vercel:** project `cool3jscomponents`, Root Directory `apps/docs`, so `apps/docs/vercel.json` is the one in effect (`pnpm build` → `dist`). The root `vercel.json` (`pnpm --filter docs build` → `apps/docs/dist`) covers a repo-root setting. Keep "Include files outside the Root Directory" on — the site imports package source from `../../packages`. Pushing `master` deploys. The "Failed to create bin … contribution-skyline-fetch" install warning is harmless.
+- **Domain:** `docs.abhiramkrishna.com` is a CNAME (`docs` → Vercel's `…vercel-dns-017.com` target) in Namecheap Advanced DNS; nameservers are Namecheap's. HTTPS is Vercel's Let's Encrypt cert, auto-renewed.
+
 ## Rules carried over from the portfolio
 
 - **No code comments** unless the user approves that specific comment first (JS, template or CSS). Express intent through naming. Empty `catch {}` fails `no-empty` — use `catch { return; }`.
@@ -72,7 +80,7 @@ Astro + React islands + Tailwind v4 + MDX (Starlight and Tweakpane are gone). Ev
 
 ## Decided vs open
 
-Decided: monorepo (`packages/spacetime-grid`, `packages/contribution-skyline`, `apps/docs`), tsup builds (ESM + types), `three` as a peer dependency, Changesets for releases, an Astro + React-islands showcase site (React Bits–style; Tailwind v4, shadcn/ui, Motion, cmdk, Shiki, Lucide; Starlight's look dropped) deployed on Vercel at `docs.abhiramkrishna.com`, framework-agnostic core with Vue / React / Web Component wrappers, and sandbox controls (now on each component page rather than a separate `/sandbox` page) plus props tables, both generated from an options schema each package exports.
+Decided: monorepo (`packages/spacetime-grid`, `packages/contribution-skyline`, `apps/docs`), tsup builds (ESM + types), `three` as a peer dependency, Changesets for releases, an Astro + React-islands showcase site (React Bits–style; Tailwind v4, shadcn/ui, Motion, cmdk, Shiki, Lucide; Starlight's look dropped) deployed on Vercel at `docs.abhiramkrishna.com` (live), framework-agnostic core with Vue / React / Web Component wrappers, and sandbox controls (now on each component page rather than a separate `/sandbox` page) plus props tables, both generated from an options schema each package exports.
 
 Also decided: pnpm workspaces, scoped package names (`@abhiramkrishna/spacetime-grid`, `@abhiramkrishna/contribution-skyline`), MIT licence.
 
