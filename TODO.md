@@ -47,7 +47,7 @@ Decided: Astro + React islands (drop Starlight's look), npm packages stay the in
 - [x] App shell: glassy sticky navbar, ⌘K search (cmdk), theme toggle, GitHub link
 - [x] Component registry: one entry per component (name, slug, category, description, badges New/Updated, schema, demo, snippet spec)
 - [x] Landing page: spacetime grid as the live hero background + code card that drives it, with presets; feature bento; live showcase cards; install steps (cards and "Tune" link to the guides until the component pages exist)
-- [ ] Browse page: sidebar with category filters + filter box + grouped list with badges; grid of live preview cards; category + sort dropdowns
+- [x] Browse page: sidebar with category filters + filter box + grouped list with badges; grid of live preview cards; category + sort dropdowns
 - [x] Component page: Preview / Code toggle, device sizes + full screen, Customize panel (custom controls from the schema, replaces Tweakpane), props table, prev / next, copy code in 4 formats
 - [ ] Move the written guides (getting started, data, plugins, API, frameworks) into the new shell as MDX
 - [ ] Sandbox extras: presets, reset/randomise, shareable URL, GitHub username → skyline via the serverless handler, FPS / pause / reduced-motion toggle

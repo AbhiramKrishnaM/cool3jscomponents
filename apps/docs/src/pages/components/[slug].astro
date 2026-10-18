@@ -24,9 +24,9 @@ const pager = "group flex min-w-0 flex-col gap-1 rounded-xl border bg-card p-4 t
   <main class="mx-auto max-w-6xl px-4 pt-10 pb-24 sm:px-6 lg:pt-14">
     <nav aria-label="Breadcrumb" class="font-mono text-xs text-muted-foreground">
       <ol class="flex flex-wrap items-center gap-1.5">
-        <li><a href="/" class="hover:text-foreground">Components</a></li>
+        <li><a href="/components/" class="hover:text-foreground">Components</a></li>
         <li aria-hidden="true">/</li>
-        <li>{categoryLabel(entry.category)}</li>
+        <li><a href={`/components/?category=${entry.category}`} class="hover:text-foreground">{categoryLabel(entry.category)}</a></li>
       </ol>
     </nav>
 
@@ -43,7 +43,7 @@ const pager = "group flex min-w-0 flex-col gap-1 rounded-xl border bg-card p-4 t
         </p>
       </div>
       <a href={entry.guideHref} class="inline-flex h-9 items-center gap-2 rounded-md border bg-background px-4 text-sm font-medium transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
-        <BookOpen class="size-4" /> Read the guide
+        <BookOpen className="size-4" /> Read the guide
       </a>
     </header>
 
@@ -73,14 +73,14 @@ const pager = "group flex min-w-0 flex-col gap-1 rounded-xl border bg-card p-4 t
       {previous
         ? (
           <a href={componentHref(previous)} class={pager}>
-            <span class="flex items-center gap-1.5 text-xs text-muted-foreground"><ArrowLeft class="size-3.5" /> Previous</span>
+            <span class="flex items-center gap-1.5 text-xs text-muted-foreground"><ArrowLeft className="size-3.5" /> Previous</span>
             <span class="font-medium">{previous.name}</span>
           </a>
         )
         : <span class="hidden sm:block"></span>}
       {next && (
         <a href={componentHref(next)} class:list={[pager, "sm:items-end sm:text-right"]}>
-          <span class="flex items-center gap-1.5 text-xs text-muted-foreground">Next <ArrowRight class="size-3.5" /></span>
+          <span class="flex items-center gap-1.5 text-xs text-muted-foreground">Next <ArrowRight className="size-3.5" /></span>
           <span class="font-medium">{next.name}</span>
         </a>
       )}

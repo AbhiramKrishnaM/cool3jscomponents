@@ -1,0 +1,38 @@
+---
+import { Image } from "astro:assets";
+import { badgeFor, categoryLabel, componentHref, type ComponentEntry } from "@/registry";
+
+interface Props {
+  entry: ComponentEntry;
+  heading?: "h2" | "h3";
+}
+
+const { entry, heading: Heading = "h3" } = Astro.props;
+const badge = badgeFor(entry);
+---
+
+<a
+  href={componentHref(entry)}
+  class="group flex flex-col overflow-hidden rounded-xl border bg-card transition-colors hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+  data-showcase={entry.slug}
+  data-name={entry.name}
+  data-category={entry.category}
+  data-search={[entry.name, entry.description, categoryLabel(entry.category), ...entry.keywords].join(" ").toLowerCase()}
+  data-added={entry.addedAt}
+  data-updated={entry.updatedAt ?? entry.addedAt}
+>
+  <div class="relative aspect-[16/9] overflow-hidden bg-stage">
+    <Image src={entry.poster} alt="" width={800} class="absolute inset-0 size-full object-cover transition-opacity duration-700 group-data-live:opacity-0" />
+    <div class="absolute inset-0" data-showcase-stage></div>
+  </div>
+  <div class="flex items-start justify-between gap-4 p-5">
+    <div class="min-w-0">
+      <Heading class="font-medium">{entry.name}</Heading>
+      <p class="mt-1 text-sm text-muted-foreground">{entry.description}</p>
+    </div>
+    <div class="flex shrink-0 items-center gap-2">
+      {badge && <span class="rounded-full bg-accent px-2 py-0.5 font-mono text-[11px] text-accent-foreground capitalize">{badge}</span>}
+      <span class="rounded-full border px-2 py-0.5 font-mono text-[11px] text-muted-foreground">{categoryLabel(entry.category)}</span>
+    </div>
+  </div>
+</a>

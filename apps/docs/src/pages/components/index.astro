@@ -1,0 +1,111 @@
+---
+import { ChevronDown, Search } from "lucide-react";
+import Site from "@/layouts/Site.astro";
+import ShowcaseCard from "@/components/ShowcaseCard.astro";
+import { COMPONENTS, badgeFor, categoryLabel, componentHref, componentsByCategory } from "@/registry";
+
+const groups = componentsByCategory();
+const searchText = (entry: (typeof COMPONENTS)[number]): string =>
+  [entry.name, entry.description, categoryLabel(entry.category), ...entry.keywords].join(" ").toLowerCase();
+
+const field = "h-9 w-full rounded-md border bg-background text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40";
+const select = "h-9 appearance-none rounded-md border bg-background pr-8 pl-3 text-sm outline-none transition-colors hover:bg-secondary/60 focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40";
+const categoryOption = "flex w-full items-center justify-between rounded-md px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-pressed:bg-secondary aria-pressed:text-foreground";
+---
+
+<Site title="Components" description="Browse live three.js components: backgrounds and data visuals for Vue, React and plain HTML.">
+  <main class="mx-auto grid max-w-7xl gap-10 px-4 pt-10 pb-24 sm:px-6 lg:grid-cols-[14rem_minmax(0,1fr)] lg:pt-14" data-browse>
+    <aside class="hidden lg:sticky lg:top-24 lg:block lg:max-h-[calc(100dvh-7rem)] lg:self-start lg:overflow-y-auto" aria-label="Filters">
+      <label class="relative block">
+        <span class="sr-only">Filter components</span>
+        <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+        <input type="search" class:list={[field, "pr-3 pl-8"]} placeholder="Filter…" autocomplete="off" data-browse-query />
+      </label>
+
+      <p class="mt-8 mb-2 px-2.5 font-mono text-[11px] tracking-wider text-muted-foreground/80 uppercase">Categories</p>
+      <div class="grid gap-0.5">
+        <button type="button" class={categoryOption} data-browse-category-option="all" aria-pressed="true">
+          All <span class="font-mono text-xs">{COMPONENTS.length}</span>
+        </button>
+        {groups.map(({ category, components }) => (
+          <button type="button" class={categoryOption} data-browse-category-option={category.id} aria-pressed="false">
+            {category.label} <span class="font-mono text-xs">{components.length}</span>
+          </button>
+        ))}
+      </div>
+
+      <nav aria-label="All components" class="mt-8 grid gap-6">
+        {groups.map(({ category, components }) => (
+          <div data-browse-group>
+            <p class="mb-2 px-2.5 font-mono text-[11px] tracking-wider text-muted-foreground/80 uppercase">{category.label}</p>
+            <ul class="grid gap-0.5">
+              {components.map((entry) => {
+                const badge = badgeFor(entry);
+                return (
+                  <li data-browse-item data-category={entry.category} data-search={searchText(entry)}>
+                    <a href={componentHref(entry)} class="flex items-center justify-between gap-2 rounded-md px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-secondary/60 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+                      <span class="truncate">{entry.name}</span>
+                      {badge && <span class="shrink-0 rounded-full bg-accent px-1.5 py-px font-mono text-[10px] text-accent-foreground capitalize">{badge}</span>}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+      </nav>
+    </aside>
+
+    <div class="min-w-0">
+      <h1 class="text-3xl font-semibold tracking-tight sm:text-4xl">Components</h1>
+      <p class="mt-3 max-w-2xl text-pretty text-muted-foreground">Every card runs live. Open one for a playground, the props and copy-ready code for JavaScript, Vue, React or a Web Component.</p>
+
+      <div class="mt-8 flex flex-wrap items-center gap-2">
+        <label class="relative min-w-0 flex-1 basis-full sm:basis-60 lg:hidden">
+          <span class="sr-only">Filter components</span>
+          <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+          <input type="search" class:list={[field, "pr-3 pl-8"]} placeholder="Filter…" autocomplete="off" data-browse-query />
+        </label>
+        <label class="relative">
+          <span class="sr-only">Category</span>
+          <select class={select} data-browse-category>
+            <option value="all">All categories</option>
+            {groups.map(({ category }) => <option value={category.id}>{category.label}</option>)}
+          </select>
+          <ChevronDown className="pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+        </label>
+        <label class="relative">
+          <span class="sr-only">Sort</span>
+          <select class={select} data-browse-sort>
+            <option value="newest">Newest</option>
+            <option value="updated">Recently updated</option>
+            <option value="name">Name A–Z</option>
+          </select>
+          <ChevronDown className="pointer-events-none absolute top-1/2 right-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
+        </label>
+        <p class="ml-auto font-mono text-xs text-muted-foreground" aria-live="polite" data-browse-count>{COMPONENTS.length} components</p>
+      </div>
+
+      <div class="mt-6 grid gap-6 md:grid-cols-2" data-browse-grid>
+        {COMPONENTS.map((entry) => <ShowcaseCard entry={entry} heading="h2" />)}
+      </div>
+
+      <div class="mt-6 rounded-xl border border-dashed p-10 text-center" data-browse-empty hidden>
+        <p class="font-medium">No components match.</p>
+        <p class="mt-1 text-sm text-muted-foreground">Try another word or category.</p>
+        <button type="button" class="mt-4 inline-flex h-8 items-center rounded-md border px-3 text-sm transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-browse-clear>Clear filters</button>
+      </div>
+    </div>
+  </main>
+</Site>
+
+<script>
+  import { initBrowse } from "@/browse/filters";
+  import { initShowcase } from "@/landing/showcase";
+
+  const root = document.querySelector<HTMLElement>("[data-browse]");
+  if (root) {
+    initBrowse(root);
+    initShowcase(root);
+  }
+</script>

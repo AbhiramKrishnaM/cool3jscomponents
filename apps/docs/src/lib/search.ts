@@ -32,11 +32,12 @@ export async function getSearchEntries(): Promise<SearchEntry[]> {
     })
     .sort((a, b) => a.order[0]! - b.order[0]! || a.order[1]! - b.order[1]! || a.entry.href.localeCompare(b.entry.href))
     .map(({ entry }) => entry);
+  const browse = { title: "All components", href: "/components/", group: "Components", description: "Browse and filter every component." };
   const components = COMPONENTS.map((component) => ({
     title: component.name,
     href: componentHref(component),
     group: "Components",
     description: component.description,
   }));
-  return [...components, ...guides];
+  return [browse, ...components, ...guides];
 }

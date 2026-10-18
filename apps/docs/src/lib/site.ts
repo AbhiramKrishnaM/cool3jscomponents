@@ -8,6 +8,7 @@ export interface NavLink {
 }
 
 export const NAV_LINKS: NavLink[] = [
+  { label: "Components", href: "/components/" },
   { label: "Spacetime grid", href: "/spacetime-grid/" },
   { label: "Contribution skyline", href: "/contribution-skyline/" },
 ];
