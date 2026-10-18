@@ -1,0 +1,61 @@
+---
+title: Reduced motion
+description: What visitors who ask for less motion see, how to override it, and how to give everyone a pause button.
+sidebar:
+  order: 4
+---
+
+import Callout from "@/components/guide/Callout.astro";
+
+## What happens by default
+
+When a visitor has **reduce motion** turned on in their system settings (`prefers-reduced-motion: reduce`), both components show a single still frame:
+
+- **Grid:** no idle waves, cursor well or click ripples, and no animation loop running.
+- **Skyline:** no twinkle or bursts. The bars show at `reducedMotionProgress` (default `1`, fully risen) instead of `progress`, because a rise driven by scroll can't play in a still frame.
+- **`scrollCamera`:** the camera stays on its `initial` pose.
+
+If the visitor changes the setting while the page is open, the components switch over without a reload. Colour and option changes still show: `setTheme()` and `setOptions()` redraw the still frame.
+
+## The `reducedMotion` option
+
+| Value | |
+|---|---|
+| `"auto"` | Default. Follows the visitor's setting. |
+| `"always"` | Always shows the still frame. |
+| `"never"` | Always animates, whatever the setting. |
+
+```ts
+new SpacetimeGrid(el, { reducedMotion: "always" });
+```
+
+<Callout type="caution">
+  Use `"never"` only after the visitor has asked for motion on your page, for example by pressing Play. Overriding their system setting without asking defeats the point of it.
+</Callout>
+
+## A pause button
+
+Some visitors don't have the system setting turned on but still want the background to stop. `reducedMotion` changes live, so a pause button is one line. This is how the playgrounds on this site pause:
+
+```ts
+let paused = false;
+
+pauseButton.addEventListener("click", () => {
+  paused = !paused;
+  grid.setOptions({ reducedMotion: paused ? "always" : "auto" });
+  pauseButton.setAttribute("aria-pressed", String(paused));
+  pauseButton.textContent = paused ? "Play" : "Pause";
+});
+```
+
+The skyline takes the same option, through `skyline.setOptions()` on the standalone scene. As a layer it follows the grid's setting.
+
+## Drawing your own things
+
+`setTheme()`, `setOptions()` and `use()` redraw the still frame for you. If you change something the grid doesn't know about, such as the values in `grid.glow` or a mesh you added to `grid.group`, call `grid.invalidate()` to redraw it. While the grid is animating, `invalidate()` does nothing, because the next frame shows the change anyway.
+
+## Testing it
+
+- **Chrome:** in DevTools, open the command menu (⌘⇧P), run **Show Rendering**, and set **Emulate CSS media feature prefers-reduced-motion** to `reduce`.
+- **Playwright:** create the context with `reducedMotion: "reduce"`.
+- **The playground:** press Pause on a [component page](/components/spacetime-grid/) to see the still frame.

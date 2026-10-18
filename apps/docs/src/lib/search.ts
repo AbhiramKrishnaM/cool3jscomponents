@@ -5,6 +5,7 @@ import { COMPONENTS, componentHref } from "@/registry";
 const SECTIONS = [
   { id: "spacetime-grid", label: "Spacetime grid" },
   { id: "contribution-skyline", label: "Contribution skyline" },
+  { id: "recipes", label: "Recipes" },
 ];
 
 function pageRank(id: string, section: string) {

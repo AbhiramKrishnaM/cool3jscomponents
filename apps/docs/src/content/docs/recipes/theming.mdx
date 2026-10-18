@@ -1,0 +1,145 @@
+---
+title: Theming
+description: Match the grid and skyline to your site, switch with light and dark mode, and change colours with the time of day.
+sidebar:
+  order: 2
+---
+
+import Callout from "@/components/guide/Callout.astro";
+import TabItem from "@/components/guide/TabItem.astro";
+import Tabs from "@/components/guide/Tabs.astro";
+
+The grid has four colours, and the skyline uses the same theme:
+
+| Key | Default | |
+|---|---|---|
+| `base` | `#0c1f33` | Resting tile colour. |
+| `hover` | `#43d9ad` | Tiles in a well, a ripple or a data glow. The skyline's bars use it too. |
+| `fog` | `#011627` | The colour distant tiles fade into. |
+| `fresnel` | `#bfe9ff` | The rim light on tiles seen at a grazing angle. |
+
+The canvas is transparent, so your page shows through between the tiles. Set `fog` to your page's background colour. Otherwise the far rows end at a visible edge instead of fading out.
+
+```ts
+const grid = new SpacetimeGrid(el, { theme: { fog: "#0b1020" } });
+grid.setTheme({ hover: "#5ee6ff" });
+```
+
+`setTheme` takes any subset of the four keys and updates the next frame, including the still frame shown under reduced motion.
+
+## Light and dark
+
+These two palettes are the ones abhiramkrishna.com uses. In light mode the tiles go pale and the highlight turns indigo, because the default teal is hard to see on white.
+
+```ts title="palettes.ts"
+export const DARK = { base: "#0c1f33", hover: "#43d9ad", fog: "#011627", fresnel: "#bfe9ff" };
+export const LIGHT = { base: "#c7d4de", hover: "#4049b0", fog: "#eff4f8", fresnel: "#d7e6f5" };
+```
+
+Follow whatever decides your site's theme. With a `dark` class on `<html>`:
+
+<Tabs syncKey="framework">
+  <TabItem label="JavaScript">
+    ```ts
+    import { SpacetimeGrid } from "@abhiramkrishna/spacetime-grid";
+    import { DARK, LIGHT } from "./palettes";
+
+    const root = document.documentElement;
+    const palette = () => (root.classList.contains("dark") ? DARK : LIGHT);
+
+    const grid = new SpacetimeGrid(el, { theme: palette() });
+    new MutationObserver(() => grid.setTheme(palette())).observe(root, { attributes: true, attributeFilter: ["class"] });
+    ```
+  </TabItem>
+  <TabItem label="Vue">
+    ```vue
+    <script setup lang="ts">
+    import { SpacetimeGrid } from "@abhiramkrishna/spacetime-grid/vue";
+    import { DARK, LIGHT } from "./palettes";
+
+    defineProps<{ dark: boolean }>();
+    </script>
+
+    <template>
+      <SpacetimeGrid :theme="dark ? DARK : LIGHT" />
+    </template>
+    ```
+  </TabItem>
+  <TabItem label="React">
+    ```tsx
+    import { SpacetimeGrid } from "@abhiramkrishna/spacetime-grid/react";
+    import { DARK, LIGHT } from "./palettes";
+
+    export function Background({ dark }: { dark: boolean }) {
+      return <SpacetimeGrid theme={dark ? DARK : LIGHT} />;
+    }
+    ```
+  </TabItem>
+  <TabItem label="Web Component">
+    ```ts
+    import { DARK, LIGHT } from "./palettes";
+
+    const grid = document.querySelector("spacetime-grid")!;
+    const root = document.documentElement;
+    const apply = () => {
+      const palette = root.classList.contains("dark") ? DARK : LIGHT;
+      for (const [key, value] of Object.entries(palette)) grid.setAttribute(`theme-${key}`, value);
+    };
+
+    apply();
+    new MutationObserver(apply).observe(root, { attributes: true, attributeFilter: ["class"] });
+    ```
+  </TabItem>
+</Tabs>
+
+To follow the operating system instead, listen to `matchMedia("(prefers-color-scheme: dark)")` and call `setTheme` in its `change` event.
+
+## Colours that change with the time of day
+
+In dark mode, abhiramkrishna.com moves through four palettes over the day and blends between them. Here they are, if you want the same effect:
+
+```ts title="day-phases.ts"
+export const PHASES = {
+  night: { base: "#0c1f33", hover: "#43d9ad", fog: "#011627", fresnel: "#bfe9ff" },
+  dawn: { base: "#2a1f3d", hover: "#ff9e7a", fog: "#1a1430", fresnel: "#ffd1b8" },
+  day: { base: "#123a55", hover: "#5ee6ff", fog: "#04223a", fresnel: "#d8f4ff" },
+  dusk: { base: "#2b1b3f", hover: "#c58cff", fog: "#170f2a", fresnel: "#f0c8ff" },
+};
+
+export function phaseAt(hour: number): keyof typeof PHASES {
+  if (hour < 5.5 || hour >= 19.75) return "night";
+  if (hour < 7.75) return "dawn";
+  if (hour < 17.25) return "day";
+  return "dusk";
+}
+```
+
+```ts
+const update = () => {
+  const now = new Date();
+  grid.setTheme(PHASES[phaseAt(now.getHours() + now.getMinutes() / 60)]);
+};
+update();
+setInterval(update, 60_000);
+```
+
+Set your page background to the phase's `fog` colour at the same time, so the fade still lines up.
+
+## The skyline
+
+- **As a layer** on a grid, the bars use the grid's `hover` colour and change with it. Set the skyline's `color` option to give them their own colour.
+- **Standalone**, `ContributionSkyline` takes the same `theme` option and has its own `setTheme()`.
+- **The 2D calendar** is plain HTML, so it's themed with CSS variables. To match the light palette above:
+
+```css
+.calendar {
+  --cs-accent: #4049b0;
+  --cs-empty: #c7d4de;
+  --cs-text: #52697d;
+  --cs-strong: #011627;
+}
+```
+
+<Callout type="tip">
+  Try a palette in the [grid playground](/components/spacetime-grid/) first. The Share button gives you a link with the colours in it.
+</Callout>

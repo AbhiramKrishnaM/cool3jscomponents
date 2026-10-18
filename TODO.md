@@ -59,7 +59,7 @@ Decided: Astro + React islands (drop Starlight's look), npm packages stay the in
   - [x] Code blocks (Expressive Code) → Shiki `night-owl` with the `codeFrame()` transformer (caption + Copy), same look as the component page's Code tab
 - [x] Sandbox extras on the component pages: presets (registry `presets`, shared with the landing hero), reset / randomise, shareable URL (changed values in the query string), FPS readout, pause (= the reduced-motion still frame; no package change)
 - [ ] GitHub username → skyline on the skyline component page, via `createContributionsHandler` as a Vercel function (needs the deploy first)
-- [ ] Recipes: theming, performance tuning, reduced motion, grid + skyline together
+- [x] Recipes: theming, performance tuning, reduced motion, grid + skyline together (`/recipes/`, a third guide section)
 - [ ] Deploy on Vercel at `docs.abhiramkrishna.com` (DNS in Namecheap)
 
 ## 6. Release

@@ -17,6 +17,7 @@ export interface NavSection {
 export const GUIDE_SECTIONS = [
   { id: "spacetime-grid", label: "Spacetime grid" },
   { id: "contribution-skyline", label: "Contribution skyline" },
+  { id: "recipes", label: "Recipes" },
 ] as const;
 
 export const guideHref = (id: string): string => `/${id}/`;

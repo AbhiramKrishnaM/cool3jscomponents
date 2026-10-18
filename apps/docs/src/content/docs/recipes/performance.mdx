@@ -1,0 +1,90 @@
+---
+title: Performance
+description: What the components already do to stay cheap, which options cost the most, and how to load three.js only when it's needed.
+sidebar:
+  order: 3
+---
+
+import Callout from "@/components/guide/Callout.astro";
+
+## Already handled
+
+You don't need to do anything for these:
+
+- **No per-frame garbage:** the idle waves are precomputed per tile, so a frame does no trigonometry and allocates nothing. On abhiramkrishna.com this took the grid from about 18% of CPU time to about 4.5%.
+- **Sleeps when unseen:** the loop stops when the canvas scrolls out of view or the tab is hidden, and starts again when it's back. Check `grid.isRunning` to see it.
+- **Capped pixel ratio:** the canvas renders at most at 2× device pixels (`maxPixelRatio`).
+- **Still frame for reduced motion:** visitors who ask for less motion get one rendered frame and no loop at all. See [Reduced motion](/recipes/reduced-motion/).
+
+## The options that cost the most
+
+| Option | Default | Why it matters |
+|---|---|---|
+| `maxPixelRatio` | `2` | The GPU shades every pixel of the canvas. A full-screen background at 2× has four times the pixels of 1×. `1.5` is hard to tell apart behind text. |
+| `cols` × `rows` | `64 × 60` | 3,840 tiles, each updated every frame. Halving both quarters the work. Raise `cellSize` to cover the same area with fewer tiles. |
+| `bursts` (skyline) | `true` | Spawns and moves particles. Turn it off, or raise `burstLevel` so only the busiest days burst. |
+
+```ts
+new SpacetimeGrid(el, { maxPixelRatio: 1.5, cols: 48, rows: 44, cellSize: 0.45 });
+```
+
+`cols`, `rows` and `cellSize` set the size of the tile mesh, so they only apply when the grid is created. The framework wrappers recreate the grid for you when they change.
+
+## Load three.js later
+
+three.js is the biggest part of the bundle. If the grid isn't the first thing on screen, import it when its element comes into view:
+
+```ts
+const el = document.querySelector<HTMLElement>(".background")!;
+
+const observer = new IntersectionObserver(async ([entry]) => {
+  if (!entry?.isIntersecting) return;
+  observer.disconnect();
+  const { SpacetimeGrid } = await import("@abhiramkrishna/spacetime-grid");
+  new SpacetimeGrid(el);
+}, { rootMargin: "200px" });
+
+observer.observe(el);
+```
+
+For a background that's visible straight away, wait until the browser is idle instead, so it doesn't compete with your page's own content:
+
+```ts
+const whenIdle = window.requestIdleCallback ?? ((callback: () => void) => setTimeout(callback, 200));
+
+whenIdle(async () => {
+  const { SpacetimeGrid } = await import("@abhiramkrishna/spacetime-grid");
+  new SpacetimeGrid(el);
+});
+```
+
+Safari doesn't have `requestIdleCallback`, hence the short timeout as a fallback.
+
+Give the element the same background colour as the grid's `fog`, so nothing jumps when the canvas appears. In Nuxt, `<ClientOnly>` with `defineAsyncComponent` does the same job. In Next.js, use `next/dynamic` with `ssr: false`.
+
+## Phones
+
+- **Compact layout:** below 1024px of canvas width (`compactBreakpoint`), the grid drops lower and shrinks, so it fits a narrow screen.
+- **Skip the skyline:** the bars get small on a phone. Show the [2D calendar](/contribution-skyline/calendar/) there instead. It's plain HTML with no three.js:
+
+```ts
+const small = matchMedia("(max-width: 640px)").matches;
+
+if (small) {
+  const { renderContributionCalendar } = await import("@abhiramkrishna/contribution-skyline/calendar");
+  renderContributionCalendar(el, data);
+} else {
+  const { ContributionSkyline } = await import("@abhiramkrishna/contribution-skyline");
+  new ContributionSkyline(el, data);
+}
+```
+
+## Clean up
+
+Call `destroy()` when the element leaves the page, for example on a route change in a single-page app. It stops the loop, removes the listeners and frees the GPU memory. The Vue, React and Web Component wrappers do this when they unmount.
+
+## Measuring
+
+<Callout type="tip">
+  Test on a slow machine, not just a fast one. In Chrome DevTools, open **Performance**, set **CPU** to **4× slowdown**, record a few seconds of moving the mouse over the grid, and look at the time spent in scripting per frame. Lighthouse alone won't show this, because it measures loading, not the frames after it.
+</Callout>

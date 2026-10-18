@@ -1,0 +1,19 @@
+---
+title: Recipes
+description: Short, copy-ready answers to the questions that come up once a component is on the page.
+sidebar:
+  label: Overview
+  order: 1
+---
+
+import NextStep from "@/components/guide/NextStep.astro";
+import NextSteps from "@/components/guide/NextSteps.astro";
+
+The guides cover each component on its own. These pages cover what comes next: matching your site's colours, keeping the frame rate up, respecting motion settings, and putting the grid and skyline on the same page.
+
+<NextSteps title="Recipes">
+  <NextStep title="Theming" description="Light and dark palettes, time-of-day colours, and a calendar that matches." href="/recipes/theming/" />
+  <NextStep title="Performance" description="What's already handled, which options cost the most, and loading three.js later." href="/recipes/performance/" />
+  <NextStep title="Reduced motion" description="What visitors who ask for less motion see, and how to add a pause button." href="/recipes/reduced-motion/" />
+  <NextStep title="Grid and skyline together" description="One scene: a camera that follows the page and bars that rise in the About section." href="/recipes/grid-and-skyline/" />
+</NextSteps>

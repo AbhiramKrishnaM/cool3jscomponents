@@ -5,12 +5,13 @@ export const THEME_STORAGE_KEY = "theme";
 export interface NavLink {
   label: string;
   href: string;
+  match?: readonly string[];
 }
 
 export const NAV_LINKS: NavLink[] = [
   { label: "Components", href: "/components/" },
-  { label: "Spacetime grid", href: "/spacetime-grid/" },
-  { label: "Contribution skyline", href: "/contribution-skyline/" },
+  { label: "Docs", href: "/spacetime-grid/getting-started/", match: ["/spacetime-grid/", "/contribution-skyline/"] },
+  { label: "Recipes", href: "/recipes/" },
 ];
 
 export interface SearchEntry {
