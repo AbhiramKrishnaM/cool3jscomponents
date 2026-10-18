@@ -1,9 +1,32 @@
 {
   "name": "@abhiramkrishna/spacetime-grid",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "An animated, instanced three.js grid with idle waves, a cursor gravity well and click ripples.",
   "license": "MIT",
   "author": "Abhiram Krishna M",
+  "keywords": [
+    "three",
+    "threejs",
+    "webgl",
+    "background",
+    "grid",
+    "animation",
+    "waves",
+    "cursor",
+    "ripple",
+    "vue",
+    "react",
+    "web-component"
+  ],
+  "homepage": "https://github.com/AbhiramKrishnaM/cool3jscomponents/tree/master/packages/spacetime-grid#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AbhiramKrishnaM/cool3jscomponents.git",
+    "directory": "packages/spacetime-grid"
+  },
+  "bugs": {
+    "url": "https://github.com/AbhiramKrishnaM/cool3jscomponents/issues"
+  },
   "type": "module",
   "sideEffects": false,
   "files": [

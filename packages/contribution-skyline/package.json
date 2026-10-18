@@ -1,9 +1,31 @@
 {
   "name": "@abhiramkrishna/contribution-skyline",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "GitHub contributions rendered as glowing three.js bars, standalone or as a spacetime-grid layer.",
   "license": "MIT",
   "author": "Abhiram Krishna M",
+  "keywords": [
+    "three",
+    "threejs",
+    "webgl",
+    "github",
+    "contributions",
+    "calendar",
+    "chart",
+    "data-visualization",
+    "vue",
+    "react",
+    "web-component"
+  ],
+  "homepage": "https://github.com/AbhiramKrishnaM/cool3jscomponents/tree/master/packages/contribution-skyline#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AbhiramKrishnaM/cool3jscomponents.git",
+    "directory": "packages/contribution-skyline"
+  },
+  "bugs": {
+    "url": "https://github.com/AbhiramKrishnaM/cool3jscomponents/issues"
+  },
   "type": "module",
   "sideEffects": false,
   "files": [
