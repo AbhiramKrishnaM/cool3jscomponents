@@ -1,0 +1,67 @@
+---
+import type { ControlSchema } from "@/registry";
+
+interface Props {
+  schema: readonly (ControlSchema & { standaloneOnly?: boolean })[];
+}
+
+const { schema } = Astro.props;
+const groups = [...new Set(schema.map((entry) => entry.group))].map((group) => ({
+  group,
+  entries: schema.filter((entry) => entry.group === group),
+}));
+
+function typeOf(entry: ControlSchema): string {
+  if (entry.type === "select") return (entry.choices ?? []).map((choice) => `"${choice}"`).join(" | ");
+  if (entry.type === "number") return `number · ${entry.min}–${entry.max}`;
+  return entry.type;
+}
+
+function defaultOf(entry: ControlSchema): string | null {
+  if (entry.type === "color" && entry.default === "") return null;
+  if (typeof entry.default === "string") return `"${entry.default}"`;
+  return String(entry.default);
+}
+
+const key = (entry: ControlSchema): string => entry.key.startsWith("theme.") ? `theme: { ${entry.key.slice(6)} }` : entry.key;
+---
+
+<div class="overflow-hidden rounded-xl border">
+  <table class="w-full border-collapse text-left text-sm">
+    <thead class="hidden bg-secondary/60 text-xs text-muted-foreground md:table-header-group">
+      <tr>
+        <th scope="col" class="px-4 py-2.5 font-medium">Prop</th>
+        <th scope="col" class="px-4 py-2.5 font-medium">Default</th>
+        <th scope="col" class="px-4 py-2.5 font-medium">Description</th>
+      </tr>
+    </thead>
+    {groups.map(({ group, entries }) => (
+      <tbody class="block md:table-row-group">
+        <tr class="block border-t bg-secondary/30 md:table-row">
+          <th scope="colgroup" colspan="3" class="block px-4 py-2 font-mono text-[11px] font-normal tracking-wider text-muted-foreground uppercase md:table-cell">{group}</th>
+        </tr>
+        {entries.map((entry) => {
+          const value = defaultOf(entry);
+          return (
+            <tr class="grid gap-1 border-t px-4 py-3 md:table-row md:p-0">
+              <td class="md:px-4 md:py-3 md:align-top">
+                <code class="font-mono text-[13px] text-foreground">{key(entry)}</code>
+                <span class="mt-1 block font-mono text-[11px] text-muted-foreground">
+                  {typeOf(entry)}
+                  {!entry.live && " · rebuilds"}
+                  {entry.standaloneOnly && " · standalone only"}
+                </span>
+              </td>
+              <td class="text-muted-foreground md:px-4 md:py-3 md:align-top md:whitespace-nowrap">
+                <span class="mr-1 text-xs md:hidden">Default</span>
+                {entry.type === "color" && value !== null && <span class="mr-1.5 inline-block size-3 rounded-sm border align-[-1px]" style={`background:${entry.default}`} />}
+                {value === null ? <em class="text-xs">inherits</em> : <code class="font-mono text-xs text-foreground">{value}</code>}
+              </td>
+              <td class="text-muted-foreground md:px-4 md:py-3 md:align-top">{entry.description}</td>
+            </tr>
+          );
+        })}
+      </tbody>
+    ))}
+  </table>
+</div>

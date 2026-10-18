@@ -1,15 +1,6 @@
 import { splitTheme } from "@/registry/demo";
 import type { Values } from "@/registry";
-
-async function copyText(button: HTMLButtonElement, text: string): Promise<void> {
-  try {
-    await navigator.clipboard.writeText(text);
-    button.textContent = "Copied";
-  } catch {
-    button.textContent = "Press ⌘C";
-  }
-  window.setTimeout(() => (button.textContent = "Copy"), 1500);
-}
+import { copyText } from "@/lib/copy";
 
 export async function initHero(root: HTMLElement): Promise<void> {
   const stage = root.querySelector<HTMLElement>("[data-hero-stage]")!;
@@ -39,10 +30,4 @@ export async function initHero(root: HTMLElement): Promise<void> {
     const block = blocks.find((candidate) => candidate.dataset.presetCode === active);
     void copyText(copy, block?.dataset.source ?? "");
   });
-}
-
-export function initCopyButtons(scope: ParentNode): void {
-  for (const button of scope.querySelectorAll<HTMLButtonElement>("[data-copy-text]")) {
-    button.addEventListener("click", () => void copyText(button, button.dataset.copyText ?? ""));
-  }
 }

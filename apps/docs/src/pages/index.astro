@@ -1,10 +1,11 @@
 ---
 import { Image } from "astro:assets";
-import { ArrowRight, BookOpen, Gauge, Layers, MoonStar, Pause, SlidersHorizontal } from "lucide-react";
+import { ArrowRight, Gauge, Layers, MoonStar, Pause, SlidersHorizontal } from "lucide-react";
 import Site from "@/layouts/Site.astro";
 import { GithubMark } from "@/components/shell/GithubMark";
 import { GITHUB_URL, SITE_NAME } from "@/lib/site";
-import { COMPONENTS, badgeFor, categoryLabel, snippet } from "@/registry";
+import { COMPONENTS, badgeFor, categoryLabel, componentHref, snippet } from "@/registry";
+import InstallCommand from "@/components/InstallCommand.astro";
 import { spacetimeGrid } from "@/registry/spacetime-grid";
 import { HERO_CONTROLS, HERO_PRESETS } from "@/landing/presets";
 import { highlight } from "@/lib/highlight";
@@ -21,13 +22,6 @@ const frameworks = [
   { label: "Web Component", code: "<spacetime-grid></spacetime-grid>" },
 ];
 
-const managers = [
-  { id: "pnpm", command: "pnpm add @abhiramkrishna/spacetime-grid three" },
-  { id: "npm", command: "npm install @abhiramkrishna/spacetime-grid three" },
-  { id: "yarn", command: "yarn add @abhiramkrishna/spacetime-grid three" },
-  { id: "bun", command: "bun add @abhiramkrishna/spacetime-grid three" },
-];
-
 const mountSource = `import { SpacetimeGrid } from "@abhiramkrishna/spacetime-grid";
 
 const grid = new SpacetimeGrid(document.querySelector("#background"));
@@ -35,7 +29,6 @@ grid.setTheme({ hover: "#43d9ad" });`;
 const mountHtml = await highlight(mountSource);
 
 const chip = "rounded-full border border-white/10 px-3 py-1 font-mono text-xs text-white/60 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-pressed:border-primary/50 aria-pressed:bg-primary/15 aria-pressed:text-primary";
-const tab = "rounded-md px-2.5 py-1 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground aria-selected:bg-secondary aria-selected:text-foreground";
 ---
 
 <Site title={SITE_NAME} description="Live three.js backgrounds and data visuals for Vue, React and plain HTML.">
@@ -131,12 +124,12 @@ const tab = "rounded-md px-2.5 py-1 font-mono text-xs text-muted-foreground tran
 
     <section class="border-t py-24" aria-labelledby="components">
       <h2 id="components" class="text-3xl font-semibold tracking-tight sm:text-4xl">Components</h2>
-      <p class="mt-3 max-w-2xl text-muted-foreground">Each one runs live below. Open it for the guide, a playground and copy-ready code.</p>
+      <p class="mt-3 max-w-2xl text-muted-foreground">Each one runs live below. Open it for a live playground, the props and copy-ready code.</p>
       <div class="mt-10 grid gap-6 md:grid-cols-2">
         {COMPONENTS.map((entry) => {
           const badge = badgeFor(entry);
           return (
-            <a href={entry.guideHref} class="group overflow-hidden rounded-xl border bg-card transition-colors hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-showcase={entry.slug}>
+            <a href={componentHref(entry)} class="group overflow-hidden rounded-xl border bg-card transition-colors hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none" data-showcase={entry.slug}>
               <div class="relative aspect-[16/9] overflow-hidden bg-stage">
                 <Image src={entry.poster} alt="" width={800} class="absolute inset-0 size-full object-cover transition-opacity duration-700 group-data-live:opacity-0" />
                 <div class="absolute inset-0" data-showcase-stage></div>
@@ -164,19 +157,7 @@ const tab = "rounded-md px-2.5 py-1 font-mono text-xs text-muted-foreground tran
           <span class="flex size-7 items-center justify-center rounded-full bg-accent font-mono text-xs text-accent-foreground">1</span>
           <h3 class="mt-4 font-medium">Install</h3>
           <p class="mt-1 text-sm text-muted-foreground">Add the package and three.</p>
-          <div class="mt-5 overflow-hidden rounded-lg border bg-background" data-install>
-            <div class="flex items-center gap-1 border-b px-2 py-1.5" role="tablist" aria-label="Package manager">
-              {managers.map((manager, index) => (
-                <button type="button" role="tab" class={tab} data-manager={manager.id} aria-selected={index === 0 ? "true" : "false"}>{manager.id}</button>
-              ))}
-            </div>
-            {managers.map((manager, index) => (
-              <div class="flex items-center gap-2 px-3 py-3" data-manager-panel={manager.id} hidden={index !== 0}>
-                <code class="min-w-0 flex-1 truncate text-xs">{manager.command}</code>
-                <button type="button" class="shrink-0 rounded-md px-2 py-1 font-mono text-xs text-muted-foreground hover:bg-secondary hover:text-foreground" data-copy-text={manager.command}>Copy</button>
-              </div>
-            ))}
-          </div>
+          <InstallCommand packages={["@abhiramkrishna/spacetime-grid", "three"]} class="mt-5" />
         </li>
         <li class="flex min-w-0 flex-col rounded-xl border bg-card p-6">
           <span class="flex size-7 items-center justify-center rounded-full bg-accent font-mono text-xs text-accent-foreground">2</span>
@@ -192,8 +173,8 @@ const tab = "rounded-md px-2.5 py-1 font-mono text-xs text-muted-foreground tran
           <p class="mt-1 text-sm text-muted-foreground">Change options live in the playground, then copy the code for your framework.</p>
           <div class="mt-auto flex flex-col gap-2 pt-5">
             {COMPONENTS.map((entry) => (
-              <a href={entry.guideHref} class="flex items-center justify-between rounded-lg border bg-background px-3 py-2.5 text-sm transition-colors hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
-                <span class="flex items-center gap-2"><BookOpen class="size-4 text-muted-foreground" /> {entry.name}</span>
+              <a href={componentHref(entry)} class="flex items-center justify-between rounded-lg border bg-background px-3 py-2.5 text-sm transition-colors hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+                <span class="flex items-center gap-2"><SlidersHorizontal class="size-4 text-muted-foreground" /> {entry.name}</span>
                 <ArrowRight class="size-4 text-muted-foreground" />
               </a>
             ))}
@@ -205,22 +186,11 @@ const tab = "rounded-md px-2.5 py-1 font-mono text-xs text-muted-foreground tran
 </Site>
 
 <script>
-  import { initCopyButtons, initHero } from "@/landing/hero";
+  import { initHero } from "@/landing/hero";
   import { initShowcase } from "@/landing/showcase";
 
   const hero = document.querySelector<HTMLElement>("[data-hero]");
   if (hero) void initHero(hero);
   initShowcase(document);
-  initCopyButtons(document);
 
-  for (const install of document.querySelectorAll<HTMLElement>("[data-install]")) {
-    const tabs = [...install.querySelectorAll<HTMLButtonElement>("[data-manager]")];
-    const panels = [...install.querySelectorAll<HTMLElement>("[data-manager-panel]")];
-    for (const tab of tabs) {
-      tab.addEventListener("click", () => {
-        for (const other of tabs) other.setAttribute("aria-selected", String(other === tab));
-        for (const panel of panels) panel.hidden = panel.dataset.managerPanel !== tab.dataset.manager;
-      });
-    }
-  }
 </script>

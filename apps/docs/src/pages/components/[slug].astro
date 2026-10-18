@@ -1,0 +1,89 @@
+---
+import { getImage } from "astro:assets";
+import { ArrowLeft, ArrowRight, BookOpen } from "lucide-react";
+import Site from "@/layouts/Site.astro";
+import InstallCommand from "@/components/InstallCommand.astro";
+import PropsTable from "@/components/PropsTable.astro";
+import { Studio } from "@/studio/Studio";
+import { COMPONENTS, badgeFor, categoryLabel, componentHref, neighbours, type ComponentEntry } from "@/registry";
+
+export function getStaticPaths() {
+  return COMPONENTS.map((entry) => ({ params: { slug: entry.slug } }));
+}
+
+const entry = COMPONENTS.find((candidate) => candidate.slug === Astro.params.slug) as ComponentEntry;
+const { schema } = await entry.load();
+const poster = await getImage({ src: entry.poster, width: 1600, format: "webp" });
+const badge = badgeFor(entry);
+const { previous, next } = neighbours(entry.slug);
+const pill = "rounded-full border px-2 py-0.5 font-mono text-[11px] text-muted-foreground";
+const pager = "group flex min-w-0 flex-col gap-1 rounded-xl border bg-card p-4 transition-colors hover:border-primary/40 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none";
+---
+
+<Site title={entry.name} description={entry.description}>
+  <main class="mx-auto max-w-6xl px-4 pt-10 pb-24 sm:px-6 lg:pt-14">
+    <nav aria-label="Breadcrumb" class="font-mono text-xs text-muted-foreground">
+      <ol class="flex flex-wrap items-center gap-1.5">
+        <li><a href="/" class="hover:text-foreground">Components</a></li>
+        <li aria-hidden="true">/</li>
+        <li>{categoryLabel(entry.category)}</li>
+      </ol>
+    </nav>
+
+    <header class="mt-4 flex flex-wrap items-end justify-between gap-6">
+      <div class="max-w-2xl">
+        <div class="flex flex-wrap items-center gap-3">
+          <h1 class="text-3xl font-semibold tracking-tight sm:text-4xl">{entry.name}</h1>
+          {badge && <span class="rounded-full bg-accent px-2 py-0.5 font-mono text-[11px] text-accent-foreground capitalize">{badge}</span>}
+        </div>
+        <p class="mt-3 text-pretty text-muted-foreground sm:text-lg">{entry.description}</p>
+        <p class="mt-4 flex flex-wrap gap-2">
+          <span class={pill}>{categoryLabel(entry.category)}</span>
+          <span class={pill}>{entry.packageName}</span>
+        </p>
+      </div>
+      <a href={entry.guideHref} class="inline-flex h-9 items-center gap-2 rounded-md border bg-background px-4 text-sm font-medium transition-colors hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+        <BookOpen class="size-4" /> Read the guide
+      </a>
+    </header>
+
+    <div class="mt-8">
+      <Studio client:load slug={entry.slug} poster={poster.src} />
+    </div>
+
+    <section class="mt-16" aria-labelledby="installation">
+      <h2 id="installation" class="text-xl font-semibold tracking-tight">Installation</h2>
+      <p class="mt-2 text-sm text-muted-foreground">
+        <code class="font-mono text-xs text-foreground">three</code> is a peer dependency, so your app ships a single copy.
+      </p>
+      <InstallCommand packages={entry.install} class="mt-4 max-w-xl" />
+    </section>
+
+    <section class="mt-16" aria-labelledby="props">
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 id="props" class="text-xl font-semibold tracking-tight">Props</h2>
+        <p class="text-xs text-muted-foreground">Same names in every wrapper. Vue and the Web Component take them in kebab-case.</p>
+      </div>
+      <div class="mt-4">
+        <PropsTable schema={schema} />
+      </div>
+    </section>
+
+    <nav aria-label="More components" class="mt-16 grid gap-4 border-t pt-8 sm:grid-cols-2">
+      {previous
+        ? (
+          <a href={componentHref(previous)} class={pager}>
+            <span class="flex items-center gap-1.5 text-xs text-muted-foreground"><ArrowLeft class="size-3.5" /> Previous</span>
+            <span class="font-medium">{previous.name}</span>
+          </a>
+        )
+        : <span class="hidden sm:block"></span>}
+      {next && (
+        <a href={componentHref(next)} class:list={[pager, "sm:items-end sm:text-right"]}>
+          <span class="flex items-center gap-1.5 text-xs text-muted-foreground">Next <ArrowRight class="size-3.5" /></span>
+          <span class="font-medium">{next.name}</span>
+        </a>
+      )}
+    </nav>
+  </main>
+</Site>

@@ -1,0 +1,46 @@
+---
+interface Props {
+  packages: readonly string[];
+  class?: string;
+}
+
+const { packages, class: className } = Astro.props;
+const list = packages.join(" ");
+const managers = [
+  { id: "pnpm", command: `pnpm add ${list}` },
+  { id: "npm", command: `npm install ${list}` },
+  { id: "yarn", command: `yarn add ${list}` },
+  { id: "bun", command: `bun add ${list}` },
+];
+const tab = "rounded-md px-2.5 py-1 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground aria-selected:bg-secondary aria-selected:text-foreground";
+---
+
+<div class:list={["min-w-0 overflow-hidden rounded-lg border bg-background", className]} data-install>
+  <div class="flex items-center gap-1 border-b px-2 py-1.5" role="tablist" aria-label="Package manager">
+    {managers.map((manager, index) => (
+      <button type="button" role="tab" class={tab} data-manager={manager.id} aria-selected={index === 0 ? "true" : "false"}>{manager.id}</button>
+    ))}
+  </div>
+  {managers.map((manager, index) => (
+    <div class="flex items-center gap-2 px-3 py-3" data-manager-panel={manager.id} hidden={index !== 0}>
+      <code class="min-w-0 flex-1 truncate text-xs">{manager.command}</code>
+      <button type="button" class="shrink-0 rounded-md px-2 py-1 font-mono text-xs text-muted-foreground hover:bg-secondary hover:text-foreground" data-copy-text={manager.command}>Copy</button>
+    </div>
+  ))}
+</div>
+
+<script>
+  import { initCopyButtons } from "@/lib/copy";
+
+  for (const install of document.querySelectorAll<HTMLElement>("[data-install]")) {
+    const tabs = [...install.querySelectorAll<HTMLButtonElement>("[data-manager]")];
+    const panels = [...install.querySelectorAll<HTMLElement>("[data-manager-panel]")];
+    for (const tab of tabs) {
+      tab.addEventListener("click", () => {
+        for (const other of tabs) other.setAttribute("aria-selected", String(other === tab));
+        for (const panel of panels) panel.hidden = panel.dataset.managerPanel !== tab.dataset.manager;
+      });
+    }
+    initCopyButtons(install);
+  }
+</script>

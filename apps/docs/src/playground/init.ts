@@ -1,26 +1,6 @@
 import { createPanel } from "./panel";
+import { storeFramework, storedFramework } from "@/lib/framework";
 import { defaultValues, getComponent, snippet, type Framework } from "@/registry";
-
-const FRAMEWORK_LABELS: Record<Framework, string> = { js: "JavaScript", vue: "Vue", react: "React", element: "Web Component" };
-const SYNC_KEY = "starlight-synced-tabs__framework";
-
-function storedFramework(): Framework {
-  try {
-    const label = localStorage.getItem(SYNC_KEY);
-    const match = (Object.keys(FRAMEWORK_LABELS) as Framework[]).find((key) => FRAMEWORK_LABELS[key] === label);
-    return match ?? "js";
-  } catch {
-    return "js";
-  }
-}
-
-function storeFramework(framework: Framework): void {
-  try {
-    localStorage.setItem(SYNC_KEY, FRAMEWORK_LABELS[framework]);
-  } catch {
-    return;
-  }
-}
 
 async function mount(root: HTMLElement): Promise<void> {
   const entry = getComponent(root.dataset.playground ?? "");
