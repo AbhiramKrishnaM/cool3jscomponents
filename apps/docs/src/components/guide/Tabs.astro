@@ -1,0 +1,27 @@
+---
+interface Props {
+  syncKey?: string;
+}
+
+const { syncKey } = Astro.props;
+const html = await Astro.slots.render("default");
+const labels = [...html.matchAll(/data-tab-label="([^"]*)"/g)].map((match) => match[1] ?? "");
+let index = 0;
+const panels = html.replace(/data-tab-label="/g, (match) => (index++ === 0 ? match : `hidden ${match}`));
+const tab = "shrink-0 border-b-2 border-transparent px-3 py-2 text-sm whitespace-nowrap text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-selected:border-primary aria-selected:text-foreground";
+---
+
+<div class="my-6" data-tabs data-sync-key={syncKey}>
+  <div role="tablist" class="flex overflow-x-auto border-b">
+    {labels.map((label, position) => (
+      <button type="button" role="tab" class={tab} data-tab={label} aria-selected={position === 0 ? "true" : "false"}>{label}</button>
+    ))}
+  </div>
+  <Fragment set:html={panels} />
+</div>
+
+<script>
+  import { initTabs } from "@/lib/tabs";
+
+  initTabs(document);
+</script>

@@ -1,0 +1,25 @@
+---
+import { Image } from "astro:assets";
+import { ArrowRight } from "lucide-react";
+import { componentHref, getComponent } from "@/registry";
+
+interface Props {
+  slug: string;
+}
+
+const entry = getComponent(Astro.props.slug);
+if (!entry) throw new Error(`Unknown component ${Astro.props.slug}`);
+---
+
+<figure class="not-prose group my-8 overflow-hidden rounded-xl border" data-showcase={entry.slug}>
+  <div class="relative aspect-[16/9] overflow-hidden bg-stage">
+    <Image src={entry.poster} alt="" width={1200} class="absolute inset-0 my-0 size-full rounded-none border-0 object-cover transition-opacity duration-700 group-data-live:opacity-0" />
+    <div class="absolute inset-0" data-showcase-stage></div>
+  </div>
+  <figcaption class="flex flex-wrap items-center justify-between gap-2 border-t bg-card px-4 py-3 text-sm">
+    <span class="text-muted-foreground">{entry.hint}</span>
+    <a href={componentHref(entry)} class="inline-flex items-center gap-1.5 font-medium text-primary no-underline hover:underline">
+      Open the playground <ArrowRight className="size-4" />
+    </a>
+  </figcaption>
+</figure>

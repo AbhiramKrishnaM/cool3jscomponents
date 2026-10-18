@@ -5,7 +5,7 @@ sidebar:
   order: 4
 ---
 
-import { Aside } from "@astrojs/starlight/components";
+import Callout from "@/components/guide/Callout.astro";
 
 Plugins hook into every frame of the grid. Add one with `grid.use(plugin)`, which returns a function that removes it. The package comes with two plugins, and you can write your own.
 
@@ -107,9 +107,9 @@ grid.use(pulse);
 - **`grid.glow`** takes a value from 0 to 1 per tile. A glowing tile lifts slightly and takes the highlight colour.
 - **Your own meshes** go in `grid.group`. Its local XY plane is the grid surface, so they tilt and sway with it.
 
-<Aside type="caution">
+<Callout type="caution">
   Hooks run on every frame, so avoid creating objects or arrays in them. Reuse scratch values instead, as the built-in plugins do.
-</Aside>
+</Callout>
 
 ### Placing things from a screen point
 

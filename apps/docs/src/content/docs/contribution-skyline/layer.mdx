@@ -5,7 +5,7 @@ sidebar:
   order: 4
 ---
 
-import { Aside } from "@astrojs/starlight/components";
+import Callout from "@/components/guide/Callout.astro";
 
 If your page already has a [spacetime grid](/spacetime-grid/), add the skyline to it as a plugin instead of creating a second scene. This is how abhiramkrishna.com does it.
 
@@ -71,6 +71,6 @@ remove();
 
 Removing the layer takes its meshes off the grid, clears the glow and frees its GPU resources.
 
-<Aside>
+<Callout>
   The layer follows the grid's motion setting. Under reduced motion, the bars show at `reducedMotionProgress` in the grid's still frame, with no twinkle or bursts.
-</Aside>
+</Callout>

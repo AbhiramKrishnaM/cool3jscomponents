@@ -1,0 +1,21 @@
+---
+import { ArrowRight } from "lucide-react";
+
+interface Props {
+  title: string;
+  description?: string;
+  href: string;
+}
+
+const { title, description, href } = Astro.props;
+---
+
+<li class="my-0 pl-0">
+  <a href={href} class="group flex items-center justify-between gap-4 py-3.5 no-underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none">
+    <span class="min-w-0">
+      <span class="block font-medium text-foreground">{title}</span>
+      {description && <span class="mt-0.5 block text-sm font-normal text-muted-foreground">{description}</span>}
+    </span>
+    <ArrowRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+  </a>
+</li>

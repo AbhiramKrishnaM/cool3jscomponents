@@ -6,7 +6,7 @@ sidebar:
   order: 3
 ---
 
-import OptionsTable from "../../../components/OptionsTable.astro";
+import PropsTable from "@/components/PropsTable.astro";
 import { SPACETIME_GRID_SCHEMA } from "@abhiramkrishna/spacetime-grid";
 
 Pass options to the constructor, or to a wrapper as props. Options marked **live** can change at any time with `grid.setOptions()`. Options marked **rebuild** (`cols`, `rows`, `cellSize`, `fill`) set the size of the tile mesh, so changing them means creating a new grid; the Vue, React and Web Component wrappers do that for you.
@@ -18,4 +18,4 @@ grid.setOptions({ rippleSpeed: 3.5 });
 
 These tables are generated from `SPACETIME_GRID_SCHEMA`, the same data the sandbox builds its controls from, so they always match the code.
 
-<OptionsTable schema={SPACETIME_GRID_SCHEMA} />
+<PropsTable schema={SPACETIME_GRID_SCHEMA} />

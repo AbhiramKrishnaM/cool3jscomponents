@@ -5,7 +5,9 @@ sidebar:
   order: 3
 ---
 
-import { Aside, Tabs, TabItem } from "@astrojs/starlight/components";
+import Callout from "@/components/guide/Callout.astro";
+import TabItem from "@/components/guide/TabItem.astro";
+import Tabs from "@/components/guide/Tabs.astro";
 
 Every component takes the same JSON:
 
@@ -20,9 +22,9 @@ interface ContributionData {
 
 `days` runs oldest to newest, starting on a Sunday: 53 weeks × 7 days for a full year. `level` is GitHub's own 0–4 shading.
 
-<Aside type="caution" title="Server only">
+<Callout type="caution" title="Server only">
   GitHub's contributions page has no CORS headers, so browsers can't fetch it directly. Every helper here runs at build time, in a serverless function or on a server, and the components only receive the JSON.
-</Aside>
+</Callout>
 
 ## At build time
 
@@ -111,6 +113,6 @@ CONTRIBUTIONS_TOKEN=ghp_… npx contribution-skyline-fetch your-username
 
 What's included depends on GitHub's rules for your account, so compare the result with your profile once.
 
-<Aside type="danger" title="Never put a token in browser code">
+<Callout type="danger" title="Never put a token in browser code">
   `fetchContributions` throws an error if it's given a token in a browser. Keep tokens in environment variables on the server or in your CI.
-</Aside>
+</Callout>

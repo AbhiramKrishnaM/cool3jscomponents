@@ -1,0 +1,12 @@
+---
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<div class="border-t py-4">
+  <dt class="font-medium text-foreground">{title}</dt>
+  <dd class="mt-1 text-sm leading-6 text-muted-foreground [&>*]:my-0"><slot /></dd>
+</div>

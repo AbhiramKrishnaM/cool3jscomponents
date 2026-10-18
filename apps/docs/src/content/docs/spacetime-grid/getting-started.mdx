@@ -5,29 +5,17 @@ sidebar:
   order: 2
 ---
 
-import { Aside, Steps, Tabs, TabItem } from "@astrojs/starlight/components";
+import Callout from "@/components/guide/Callout.astro";
+import Steps from "@/components/guide/Steps.astro";
+import TabItem from "@/components/guide/TabItem.astro";
+import Tabs from "@/components/guide/Tabs.astro";
+import InstallCommand from "@/components/InstallCommand.astro";
 
 <Steps>
 
 1. Install the package and three.js:
 
-   <Tabs syncKey="pm">
-     <TabItem label="npm">
-       ```sh
-       npm install @abhiramkrishna/spacetime-grid three
-       ```
-     </TabItem>
-     <TabItem label="pnpm">
-       ```sh
-       pnpm add @abhiramkrishna/spacetime-grid three
-       ```
-     </TabItem>
-     <TabItem label="yarn">
-       ```sh
-       yarn add @abhiramkrishna/spacetime-grid three
-       ```
-     </TabItem>
-   </Tabs>
+   <InstallCommand packages={["@abhiramkrishna/spacetime-grid", "three"]} />
 
    `three` is a peer dependency (version 0.160 or later), so the grid uses your app's copy.
 
@@ -98,9 +86,9 @@ import { Aside, Steps, Tabs, TabItem } from "@astrojs/starlight/components";
 - **Input:** the cursor and clicks are tracked on `window`, so the grid still reacts when it sits behind your content with `z-index: -1`. Positions are mapped onto the canvas, and anything outside it is ignored.
 - **Phone layout:** below 1024px of canvas width (`compactBreakpoint`), the grid drops lower and shrinks a little, which suits phones.
 
-<Aside type="tip">
+<Callout type="tip">
   The cursor well only reacts to a mouse. On touch screens, taps still send ripples.
-</Aside>
+</Callout>
 
 ## Changing it while it runs
 

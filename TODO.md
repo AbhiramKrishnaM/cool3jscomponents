@@ -49,7 +49,14 @@ Decided: Astro + React islands (drop Starlight's look), npm packages stay the in
 - [x] Landing page: spacetime grid as the live hero background + code card that drives it, with presets; feature bento; live showcase cards; install steps (cards and "Tune" link to the guides until the component pages exist)
 - [x] Browse page: sidebar with category filters + filter box + grouped list with badges; grid of live preview cards; category + sort dropdowns
 - [x] Component page: Preview / Code toggle, device sizes + full screen, Customize panel (custom controls from the schema, replaces Tweakpane), props table, prev / next, copy code in 4 formats
-- [ ] Move the written guides (getting started, data, plugins, API, frameworks) into the new shell as MDX
+- [x] Move the written guides (getting started, data, plugins, API, frameworks) into the new shell as MDX
+  - [x] Replace Starlight's built-in MDX components with shadcn-style Astro + Lucide versions in the site's tokens, so the guides stop looking like the default Starlight template (the user said the colourful callouts and icon cards look AI-generated)
+  - [x] `<Aside>` (6 uses: tip, caution, danger, note) → `guide/Callout.astro` (shadcn Alert look, plain Astro, no JS): neutral card, thin border, one muted Lucide icon, no purple/orange fills; only `danger` gets the destructive colour
+  - [x] `<CardGrid>` + `<Card icon>` (2 grids, 8 cards on the two overview pages) → drop the boxed icon cards; use a plain two-column feature list (title + one line, no coloured icon tiles), or link each item to the live demo on the component page
+  - [x] `<LinkCard>` (4 uses) → a simple "Next steps" link list with an arrow, matching the component page's prev / next links
+  - [x] `<Tabs>` / `<TabItem>` (6 tab sets, 21 tabs; `syncKey` framework + pm) → `guide/Tabs.astro` (server-rendered tablist, small script), keeping the synced framework choice (`lib/framework.ts`) and reusing `InstallCommand.astro` for package-manager tabs
+  - [x] `<Steps>` (2 uses) → a numbered list styled like the landing page's install steps
+  - [x] Code blocks (Expressive Code) → Shiki `night-owl` with the `codeFrame()` transformer (caption + Copy), same look as the component page's Code tab
 - [ ] Sandbox extras: presets, reset/randomise, shareable URL, GitHub username → skyline via the serverless handler, FPS / pause / reduced-motion toggle
 - [ ] Recipes: theming, performance tuning, reduced motion, grid + skyline together
 - [ ] Deploy on Vercel at `docs.abhiramkrishna.com` (DNS in Namecheap)

@@ -26,7 +26,7 @@ function defaultOf(entry: ControlSchema): string | null {
 const key = (entry: ControlSchema): string => entry.key.startsWith("theme.") ? `theme: { ${entry.key.slice(6)} }` : entry.key;
 ---
 
-<div class="overflow-hidden rounded-xl border">
+<div class="not-prose overflow-hidden rounded-xl border">
   <table class="w-full border-collapse text-left text-sm">
     <thead class="hidden bg-secondary/60 text-xs text-muted-foreground md:table-header-group">
       <tr>

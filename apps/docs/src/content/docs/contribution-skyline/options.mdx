@@ -6,7 +6,7 @@ sidebar:
   order: 6
 ---
 
-import OptionsTable from "../../../components/OptionsTable.astro";
+import PropsTable from "@/components/PropsTable.astro";
 import { CONTRIBUTION_SKYLINE_SCHEMA } from "@abhiramkrishna/contribution-skyline";
 
 All options are live: change them with `setOptions()` on the standalone skyline or on the layer, or pass them to a wrapper as props. Options marked "standalone only" only apply to the standalone skyline; as a layer, it follows the grid's own motion and floor.
@@ -18,4 +18,4 @@ skyline.setOptions({ twinkleDepth: 0.5, floor: false });
 
 `progress` can also be a function in code. It's read every frame, which is how you drive the rise from scroll. These tables are generated from `CONTRIBUTION_SKYLINE_SCHEMA`.
 
-<OptionsTable schema={CONTRIBUTION_SKYLINE_SCHEMA} showLive={false} emptyColor="grid highlight" />
+<PropsTable schema={CONTRIBUTION_SKYLINE_SCHEMA} />

@@ -1,0 +1,21 @@
+---
+import { Info, Lightbulb, OctagonAlert, TriangleAlert } from "lucide-react";
+
+interface Props {
+  type?: "note" | "tip" | "caution" | "danger";
+  title?: string;
+}
+
+const { type = "note", title } = Astro.props;
+const icons = { note: Info, tip: Lightbulb, caution: TriangleAlert, danger: OctagonAlert };
+const Icon = icons[type];
+const danger = type === "danger";
+---
+
+<aside class:list={["my-6 flex gap-3 rounded-lg border bg-card px-4 py-3.5 text-sm leading-6", danger && "border-destructive/40"]} aria-label={title ?? type}>
+  <Icon className={danger ? "mt-1 size-4 shrink-0 text-destructive" : "mt-1 size-4 shrink-0 text-muted-foreground"} aria-hidden="true" />
+  <div class="min-w-0 [&>*]:my-0 [&>*+*]:mt-2">
+    {title && <p class="font-medium text-foreground">{title}</p>}
+    <slot />
+  </div>
+</aside>

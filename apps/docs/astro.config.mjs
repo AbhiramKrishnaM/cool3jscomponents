@@ -1,8 +1,10 @@
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "astro/config";
-import starlight from "@astrojs/starlight";
+import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
+import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
+import { codeFrame } from "./src/lib/code-frame.mjs";
 
 const packageSource = (name) => fileURLToPath(new URL(`../../packages/${name}/src`, import.meta.url));
 const grid = packageSource("spacetime-grid");
@@ -10,6 +12,9 @@ const skyline = packageSource("contribution-skyline");
 
 export default defineConfig({
   site: "https://docs.abhiramkrishna.com",
+  markdown: {
+    shikiConfig: { theme: "night-owl", transformers: [codeFrame()] },
+  },
   vite: {
     plugins: [tailwindcss()],
     resolve: {
@@ -21,41 +26,5 @@ export default defineConfig({
       ],
     },
   },
-  integrations: [
-    react(),
-    starlight({
-      title: "threejscomponents",
-      description: "Reusable three.js components from abhiramkrishna.com: the spacetime grid and the contribution skyline.",
-      customCss: ["@fontsource/fira-code/400.css", "@fontsource/fira-code/600.css", "./src/styles/theme.css"],
-      social: [
-        { icon: "github", label: "GitHub", href: "https://github.com/AbhiramKrishnaM" },
-      ],
-      sidebar: [
-        {
-          label: "Spacetime grid",
-          items: [
-            "spacetime-grid",
-            "spacetime-grid/getting-started",
-            "spacetime-grid/options",
-            "spacetime-grid/plugins",
-            "spacetime-grid/api",
-            { label: "Frameworks", items: [{ autogenerate: { directory: "spacetime-grid/frameworks" } }] },
-          ],
-        },
-        {
-          label: "Contribution skyline",
-          items: [
-            "contribution-skyline",
-            "contribution-skyline/getting-started",
-            "contribution-skyline/data",
-            "contribution-skyline/layer",
-            "contribution-skyline/calendar",
-            "contribution-skyline/options",
-            "contribution-skyline/api",
-            { label: "Frameworks", items: [{ autogenerate: { directory: "contribution-skyline/frameworks" } }] },
-          ],
-        },
-      ],
-    }),
-  ],
+  integrations: [react(), mdx(), sitemap()],
 });

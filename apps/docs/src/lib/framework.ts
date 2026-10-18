@@ -3,7 +3,8 @@ import type { Framework } from "@/registry/types";
 export const FRAMEWORK_LABELS: Record<Framework, string> = { js: "JavaScript", vue: "Vue", react: "React", element: "Web Component" };
 export const FRAMEWORKS = Object.keys(FRAMEWORK_LABELS) as Framework[];
 
-const SYNC_KEY = "starlight-synced-tabs__framework";
+export const SYNC_KEY_PREFIX = "synced-tabs__";
+const SYNC_KEY = `${SYNC_KEY_PREFIX}framework`;
 
 export function storedFramework(): Framework {
   try {

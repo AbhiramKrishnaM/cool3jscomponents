@@ -15,7 +15,7 @@ const managers = [
 const tab = "rounded-md px-2.5 py-1 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground aria-selected:bg-secondary aria-selected:text-foreground";
 ---
 
-<div class:list={["min-w-0 overflow-hidden rounded-lg border bg-background", className]} data-install>
+<div class:list={["not-prose min-w-0 overflow-hidden rounded-lg border bg-background", className]} data-install>
   <div class="flex items-center gap-1 border-b px-2 py-1.5" role="tablist" aria-label="Package manager">
     {managers.map((manager, index) => (
       <button type="button" role="tab" class={tab} data-manager={manager.id} aria-selected={index === 0 ? "true" : "false"}>{manager.id}</button>
