@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Check, Code2, Copy, Eye, Maximize2, Minimize2, Monitor, RotateCcw, Smartphone, Tablet } from "lucide-react";
+import { Check, Code2, Copy, Eye, Link2, Maximize2, Minimize2, Monitor, Pause, Play, RotateCcw, Shuffle, Smartphone, Tablet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FRAMEWORKS, FRAMEWORK_LABELS, storeFramework, storedFramework } from "@/lib/framework";
 import { cn } from "@/lib/utils";
 import { defaultValues, getComponent, snippet, type ControlSchema, type DemoInstance, type Framework, type LoadedComponent, type Values } from "@/registry";
 import { Controls } from "./Controls";
 import { highlightSnippet } from "./highlighter";
+import { matchingPreset, presetValues, randomValues, searchFromValues, valuesFromSearch } from "./sandbox";
 
 type View = "preview" | "code";
 type Device = "desktop" | "tablet" | "mobile";
@@ -17,6 +18,45 @@ const DEVICES: { id: Device; label: string; width: string; Icon: typeof Monitor 
 ];
 
 const REBUILD_DELAY = 180;
+const URL_DELAY = 250;
+
+const MOTION: ControlSchema = {
+  key: "reducedMotion",
+  label: "Reduced motion",
+  group: "Motion",
+  description: "",
+  live: true,
+  type: "select",
+  default: "auto",
+  choices: ["auto", "always", "never"],
+};
+
+function prefersReducedMotion(): boolean {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function useFps(active: boolean): number | null {
+  const [fps, setFps] = useState<number | null>(null);
+  useEffect(() => {
+    if (!active) {
+      setFps(null);
+      return;
+    }
+    let frames = 0;
+    let since = performance.now();
+    let id = requestAnimationFrame(function count(now) {
+      frames += 1;
+      if (now - since >= 500) {
+        setFps(Math.round((frames * 1000) / (now - since)));
+        frames = 0;
+        since = now;
+      }
+      id = requestAnimationFrame(count);
+    });
+    return () => cancelAnimationFrame(id);
+  }, [active]);
+  return fps;
+}
 
 const segment = "inline-flex h-7 items-center gap-1.5 rounded-[5px] px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none aria-selected:bg-background aria-selected:text-foreground aria-selected:shadow-sm aria-pressed:bg-background aria-pressed:text-foreground aria-pressed:shadow-sm dark:aria-selected:bg-secondary dark:aria-pressed:bg-secondary";
 
@@ -31,7 +71,7 @@ function useCopy(): [boolean, (text: string) => void] {
   return [copied, copy];
 }
 
-function useDemo(loaded: LoadedComponent | null, stage: React.RefObject<HTMLDivElement | null>, values: React.RefObject<Values>) {
+function useDemo(loaded: LoadedComponent | null, stage: React.RefObject<HTMLDivElement | null>, values: React.RefObject<Values>, motion: React.RefObject<string>) {
   const [live, setLive] = useState(false);
   const instance = useRef<DemoInstance | null>(null);
   const queue = useRef<Promise<void>>(Promise.resolve());
@@ -44,7 +84,7 @@ function useDemo(loaded: LoadedComponent | null, stage: React.RefObject<HTMLDivE
       instance.current?.destroy();
       instance.current = null;
       if (disposed.current) return;
-      const created = await loaded.create(host, { ...values.current });
+      const created = await loaded.create(host, { ...values.current, reducedMotion: motion.current });
       if (disposed.current) created.destroy();
       else {
         instance.current = created;
@@ -66,8 +106,8 @@ function useDemo(loaded: LoadedComponent | null, stage: React.RefObject<HTMLDivE
   }, [rebuild]);
 
   const apply = useCallback((entry: ControlSchema) => {
-    instance.current?.apply(entry, values.current);
-  }, [values]);
+    instance.current?.apply(entry, { ...values.current, reducedMotion: motion.current });
+  }, [values, motion]);
 
   return { live, rebuild, apply };
 }
@@ -130,16 +170,24 @@ export function Studio({ slug, poster }: { slug: string; poster: string }) {
   const [device, setDevice] = useState<Device>("desktop");
   const [framework, setFramework] = useState<Framework>("js");
   const [fullscreen, setFullscreen] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [systemReduced, setSystemReduced] = useState(false);
   const frame = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const rebuildTimer = useRef(0);
+  const motionRef = useRef("auto");
+  const [shared, share] = useCopy();
 
   useEffect(() => {
     setFramework(storedFramework());
+    if (prefersReducedMotion()) {
+      setSystemReduced(true);
+      setPaused(true);
+    }
     let current = true;
     void entry?.load().then((result) => {
       if (!current) return;
-      valuesRef.current = defaultValues(result.controls);
+      valuesRef.current = valuesFromSearch(result.controls, location.search);
       setValues(valuesRef.current);
       setLoaded(result);
     });
@@ -148,9 +196,23 @@ export function Studio({ slug, poster }: { slug: string; poster: string }) {
     };
   }, [entry]);
 
-  const { live, rebuild, apply } = useDemo(loaded, stage, valuesRef);
+  motionRef.current = paused ? "always" : systemReduced ? "never" : "auto";
+  const { live, rebuild, apply } = useDemo(loaded, stage, valuesRef, motionRef);
+  const fps = useFps(live && !paused && view === "preview");
 
   useEffect(() => () => window.clearTimeout(rebuildTimer.current), []);
+
+  useEffect(() => {
+    if (live) apply(MOTION);
+  }, [paused, live, apply]);
+
+  useEffect(() => {
+    if (!loaded) return;
+    const timer = window.setTimeout(() => {
+      history.replaceState(history.state, "", `${location.pathname}${searchFromValues(loaded.controls, valuesRef.current)}${location.hash}`);
+    }, URL_DELAY);
+    return () => window.clearTimeout(timer);
+  }, [loaded, values]);
 
   useEffect(() => {
     const sync = (): void => {
@@ -177,11 +239,24 @@ export function Studio({ slug, poster }: { slug: string; poster: string }) {
     }
   }, [apply, rebuild]);
 
-  const reset = (): void => {
-    if (!loaded) return;
-    valuesRef.current = defaultValues(loaded.controls);
-    setValues(valuesRef.current);
+  const replaceValues = (next: Values): void => {
+    window.clearTimeout(rebuildTimer.current);
+    valuesRef.current = next;
+    setValues(next);
     rebuild();
+  };
+
+  const reset = (): void => {
+    if (loaded) replaceValues(defaultValues(loaded.controls));
+  };
+
+  const randomise = (): void => {
+    if (loaded) replaceValues(randomValues(loaded.controls));
+  };
+
+  const shareLink = (): void => {
+    if (!loaded) return;
+    share(`${location.origin}${location.pathname}${searchFromValues(loaded.controls, valuesRef.current)}`);
   };
 
   const toggleFullscreen = (): void => {
@@ -201,6 +276,8 @@ export function Studio({ slug, poster }: { slug: string; poster: string }) {
   };
 
   if (!entry) return null;
+  const presets = entry.presets ?? [];
+  const activePreset = loaded ? matchingPreset(loaded.controls, presets, values) : "default";
   const code = loaded ? snippet(framework, entry.snippet, loaded.controls, values) : "";
   const width = fullscreen ? "100%" : DEVICES.find((candidate) => candidate.id === device)!.width;
 
@@ -223,8 +300,8 @@ export function Studio({ slug, poster }: { slug: string; poster: string }) {
               </button>
             ))}
           </div>
-          <Button variant="ghost" size="icon-sm" aria-label="Reset options" title="Reset options" onClick={reset} disabled={!loaded}>
-            <RotateCcw />
+          <Button variant="ghost" size="icon-sm" aria-label={paused ? "Play" : "Pause"} title={paused ? "Play" : "Pause (shows the still frame reduced-motion visitors get)"} aria-pressed={paused} onClick={() => setPaused(!paused)}>
+            {paused ? <Play /> : <Pause />}
           </Button>
           <Button variant="ghost" size="icon-sm" aria-label="Full screen" title="Full screen" onClick={toggleFullscreen}>
             <Maximize2 />
@@ -247,6 +324,11 @@ export function Studio({ slug, poster }: { slug: string; poster: string }) {
             <img src={poster} alt="" className={cn("absolute inset-0 size-full object-cover transition-opacity duration-700", live && "opacity-0")} />
             <div ref={stage} className="absolute inset-0" />
             {entry.hint && <p className="pointer-events-none absolute bottom-3 left-4 font-mono text-xs text-white/45">{entry.hint}</p>}
+            {live && (
+              <span className="pointer-events-none absolute top-3 left-3 rounded-md bg-black/40 px-2 py-1 font-mono text-[11px] text-white/70 tabular-nums backdrop-blur" aria-live="off">
+                {paused ? "Still frame" : fps === null ? "– fps" : `${fps} fps`}
+              </span>
+            )}
             {fullscreen && (
               <button
                 type="button"
@@ -266,10 +348,33 @@ export function Studio({ slug, poster }: { slug: string; poster: string }) {
       </div>
 
       <section aria-labelledby="customize" className="rounded-xl border bg-card p-5 sm:p-6">
-        <div className="mb-6 flex items-center justify-between gap-3">
-          <h2 id="customize" className="font-medium">Customize</h2>
-          <p className="text-xs text-muted-foreground">Changes show live and update the code.</p>
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 id="customize" className="font-medium">Customize</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">Changes show live, update the code and the page URL.</p>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" onClick={randomise} disabled={!loaded}><Shuffle /> Randomise</Button>
+            <Button variant="ghost" size="sm" onClick={shareLink} disabled={!loaded}>{shared ? <Check /> : <Link2 />} {shared ? "Copied" : "Share"}</Button>
+            <Button variant="ghost" size="icon-sm" aria-label="Reset options" title="Reset options" onClick={reset} disabled={!loaded}><RotateCcw /></Button>
+          </div>
         </div>
+        {presets.length > 0 && (
+          <div role="group" aria-label="Presets" className="mb-6 flex flex-wrap gap-2">
+            {[{ id: "default", label: "Default", values: {} }, ...presets].map((preset) => (
+              <button
+                key={preset.id}
+                type="button"
+                aria-pressed={activePreset === preset.id}
+                disabled={!loaded}
+                className="rounded-full border px-3 py-1 font-mono text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-50 aria-pressed:border-primary/50 aria-pressed:bg-primary/10 aria-pressed:text-foreground"
+                onClick={() => loaded && replaceValues(presetValues(loaded.controls, preset))}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+        )}
         {loaded
           ? <Controls controls={loaded.controls} values={values} onChange={change} />
           : <p className="text-sm text-muted-foreground">Loading controls…</p>}

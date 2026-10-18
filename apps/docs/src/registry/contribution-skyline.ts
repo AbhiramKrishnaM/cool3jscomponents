@@ -14,6 +14,13 @@ export const contributionSkyline: ComponentEntry = {
   install: ["@abhiramkrishna/contribution-skyline", "three"],
   guideHref: "/contribution-skyline/",
   hint: "Drag Progress to watch the bars rise.",
+  presets: [
+    { id: "skyline", label: "Skyline", values: { barScale: 1.8, cameraElevation: 0.3 } },
+    { id: "top-down", label: "Top-down", values: { barScale: 0.8, cameraElevation: 1.3 } },
+    { id: "quiet", label: "Quiet", values: { twinkle: false, bursts: false } },
+    { id: "fireworks", label: "Fireworks", values: { burstLevel: 2, barScale: 1.2 } },
+    { id: "ember", label: "Ember", values: { "theme.hover": "#fea55f" } },
+  ],
   poster,
   snippet: {
     importPath: "@abhiramkrishna/contribution-skyline",

@@ -20,6 +20,12 @@ export type Framework = "js" | "vue" | "react" | "element";
 
 export type Badge = "new" | "updated";
 
+export interface Preset {
+  id: string;
+  label: string;
+  values: Values;
+}
+
 export interface DemoInstance {
   apply(entry: ControlSchema, values: Values): void;
   destroy(): void;
@@ -48,6 +54,7 @@ export interface ComponentEntry {
   install: readonly string[];
   guideHref: string;
   hint?: string;
+  presets?: readonly Preset[];
   poster: ImageMetadata;
   snippet: SnippetSpec;
   load(): Promise<LoadedComponent>;

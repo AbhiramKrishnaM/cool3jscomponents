@@ -13,6 +13,13 @@ export const spacetimeGrid: ComponentEntry = {
   install: ["@abhiramkrishna/spacetime-grid", "three"],
   guideHref: "/spacetime-grid/",
   hint: "Move your cursor over the grid and click.",
+  presets: [
+    { id: "calm", label: "Calm", values: { waveAmplitude: 0.04, waveSpeed: 0.5, wellDepth: 0.3 } },
+    { id: "storm", label: "Storm", values: { waveAmplitude: 0.2, waveSpeed: 1.8, rippleSpeed: 3.6, rippleLifetime: 3.2 } },
+    { id: "deep-well", label: "Deep well", values: { wellRadius: 3.4, wellDepth: 1.2 } },
+    { id: "ember", label: "Ember", values: { waveAmplitude: 0.12, rippleSpeed: 1.6, "theme.hover": "#fea55f" } },
+    { id: "dense", label: "Dense", values: { cols: 112, waveAmplitude: 0.06, wellRadius: 1.6, "theme.hover": "#5ee6ff" } },
+  ],
   poster,
   snippet: {
     importPath: "@abhiramkrishna/spacetime-grid",

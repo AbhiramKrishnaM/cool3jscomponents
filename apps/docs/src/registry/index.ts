@@ -2,7 +2,7 @@ import { contributionSkyline } from "./contribution-skyline";
 import { spacetimeGrid } from "./spacetime-grid";
 import type { Badge, Category, ComponentEntry } from "./types";
 
-export type { Badge, Category, ComponentEntry, ControlSchema, DemoInstance, Framework, LoadedComponent, Values } from "./types";
+export type { Badge, Category, ComponentEntry, ControlSchema, DemoInstance, Framework, LoadedComponent, Preset, Values } from "./types";
 export { snippet, type SnippetSpec } from "./snippet";
 export { defaultValues } from "./demo";
 

@@ -57,7 +57,8 @@ Decided: Astro + React islands (drop Starlight's look), npm packages stay the in
   - [x] `<Tabs>` / `<TabItem>` (6 tab sets, 21 tabs; `syncKey` framework + pm) → `guide/Tabs.astro` (server-rendered tablist, small script), keeping the synced framework choice (`lib/framework.ts`) and reusing `InstallCommand.astro` for package-manager tabs
   - [x] `<Steps>` (2 uses) → a numbered list styled like the landing page's install steps
   - [x] Code blocks (Expressive Code) → Shiki `night-owl` with the `codeFrame()` transformer (caption + Copy), same look as the component page's Code tab
-- [ ] Sandbox extras: presets, reset/randomise, shareable URL, GitHub username → skyline via the serverless handler, FPS / pause / reduced-motion toggle
+- [x] Sandbox extras on the component pages: presets (registry `presets`, shared with the landing hero), reset / randomise, shareable URL (changed values in the query string), FPS readout, pause (= the reduced-motion still frame; no package change)
+- [ ] GitHub username → skyline on the skyline component page, via `createContributionsHandler` as a Vercel function (needs the deploy first)
 - [ ] Recipes: theming, performance tuning, reduced motion, grid + skyline together
 - [ ] Deploy on Vercel at `docs.abhiramkrishna.com` (DNS in Namecheap)
 
