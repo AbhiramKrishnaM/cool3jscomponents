@@ -7,7 +7,7 @@ See `PLAN.md` for the full plan.
 - [x] pnpm workspaces
 - [x] Package names: scoped `@abhiramkrishna/spacetime-grid`, `@abhiramkrishna/contribution-skyline` — check availability on npm before publishing
 - [x] Licence: MIT
-- [ ] **[Abhiram]** `git init` + create the GitHub repo
+- [x] **[Abhiram]** `git init` + create the GitHub repo (`AbhiramKrishnaM/cool3jscomponents`, public)
 
 ## 1. Scaffold the monorepo
 - [x] Workspace root `package.json`, shared ESLint/TS config
@@ -60,7 +60,8 @@ Decided: Astro + React islands (drop Starlight's look), npm packages stay the in
 - [x] Sandbox extras on the component pages: presets (registry `presets`, shared with the landing hero), reset / randomise, shareable URL (changed values in the query string), FPS readout, pause (= the reduced-motion still frame; no package change)
 - [ ] GitHub username → skyline on the skyline component page, via `createContributionsHandler` as a Vercel function (needs the deploy first)
 - [x] Recipes: theming, performance tuning, reduced motion, grid + skyline together (`/recipes/`, a third guide section)
-- [ ] Deploy on Vercel at `docs.abhiramkrishna.com` (DNS in Namecheap)
+- [x] Deploy on Vercel — live at https://cool3jscomponents.vercel.app (Root Directory `apps/docs`; `vercel.json` in both the root and `apps/docs`)
+- [ ] **[Abhiram]** Custom domain `docs.abhiramkrishna.com`: add it in Vercel → Domains, then the CNAME in Namecheap
 
 ## 6. Release
 - [x] Publish both packages to npm via Changesets — `0.1.0` live 2026-10-18 (npm account needs 2FA; new publishes are staged and reviewed by npm for a few minutes before `latest` moves)
