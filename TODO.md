@@ -61,7 +61,7 @@ Decided: Astro + React islands (drop Starlight's look), npm packages stay the in
 - [ ] GitHub username → skyline on the skyline component page, via `createContributionsHandler` as a Vercel function (needs the deploy first)
 - [x] Recipes: theming, performance tuning, reduced motion, grid + skyline together (`/recipes/`, a third guide section)
 - [x] Deploy on Vercel — live at https://cool3jscomponents.vercel.app (Root Directory `apps/docs`; `vercel.json` in both the root and `apps/docs`)
-- [ ] **[Abhiram]** Custom domain `docs.abhiramkrishna.com`: add it in Vercel → Domains, then the CNAME in Namecheap
+- [x] **[Abhiram]** Custom domain — live at https://docs.abhiramkrishna.com (CNAME `docs` → Vercel in Namecheap; Let's Encrypt cert via Vercel)
 
 ## 6. Release
 - [x] Publish both packages to npm via Changesets — `0.1.0` live 2026-10-18 (npm account needs 2FA; new publishes are staged and reviewed by npm for a few minutes before `latest` moves)
